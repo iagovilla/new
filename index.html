@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Cap Table Health — KVR Consulting</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;font-size:14px;background:#f7f7f5;color:#1a1a1a;line-height:1.5}
+:root{--bg:#fff;--bg2:#f7f7f5;--bg3:#f0f0ec;--border:rgba(0,0,0,0.1);--border-md:rgba(0,0,0,0.18);--text:#1a1a1a;--text2:#555;--text3:#999;--blue:#185FA5;--blue-l:#E6F1FB;--blue-t:#0C447C;--teal:#0F6E56;--teal-l:#E1F5EE;--teal-t:#085041;--amber:#854F0B;--amber-l:#FAEEDA;--amber-t:#633806;--red:#A32D2D;--red-l:#FCEBEB;--red-t:#791F1F;--green:#3B6D11;--green-l:#EAF3DE;--green-t:#27500A}
+@media(prefers-color-scheme:dark){:root{--bg:#1c1c1c;--bg2:#252525;--bg3:#2e2e2e;--border:rgba(255,255,255,0.1);--border-md:rgba(255,255,255,0.18);--text:#f0f0f0;--text2:#aaa;--text3:#666;--blue-l:#0c2d52;--blue-t:#85B7EB;--teal-l:#04342C;--teal-t:#9FE1CB;--amber-l:#412402;--amber-t:#FAC775;--red-l:#501313;--red-t:#F09595;--green-l:#173404;--green-t:#C0DD97}}
+button{font-family:inherit;cursor:pointer}input,select{font-family:inherit}
+input[type=range]{accent-color:var(--blue);width:100%}
+::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-thumb{background:var(--border-md);border-radius:3px}
+</style>
+</head>
+<body>
+<div id="root"><div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:Inter,sans-serif;color:#999;font-size:13px">Carregando...</div></div>
+<script type="text/babel" data-presets="react">
+const {useState,useEffect,useMemo}=React;
+const TL={founder:'Fundador','cofound-tech':'Cofundador técnico',cto:'CTO contratado',clevel:'C-Level',manager:'Gerente estratégico',advisor:'Advisor',investor:'Investidor',pool:'Equity Pool'};
+const TC={founder:'founder','cofound-tech':'founder',cto:'employee',clevel:'employee',manager:'employee',advisor:'advisor',investor:'investor',pool:'pool'};
+const SL={'pre-seed':'Pre-Seed',seed:'Seed','series-a':'Series A','series-b':'Series B'};
+const BM={'pre-seed':{fMin:75,fMax:90,pMin:10,pMax:15,iMin:5,iMax:15},seed:{fMin:60,fMax:80,pMin:8,pMax:15,iMin:10,iMax:25},'series-a':{fMin:45,fMax:65,pMin:8,pMax:15,iMin:25,iMax:45},'series-b':{fMin:35,fMax:55,pMin:8,pMax:15,iMin:40,iMax:60}};
+const TCOL={founder:'#185FA5','cofound-tech':'#185FA5',pool:'#0F6E56',investor:'#854F0B',cto:'#534AB7',clevel:'#534AB7',manager:'#888780',advisor:'#888780'};
+
+function totals(sh){const t={founder:0,employee:0,investor:0,pool:0,total:0};for(const s of sh){const c=TC[s.type]||'employee';const p=parseFloat(s.pct)||0;t[c]=(t[c]||0)+p;t.total+=p;}return t;}
+
+function score(sh,stage){const b=BM[stage];const t=totals(sh);let s=100;
+  if(t.founder<b.fMin)s-=Math.min(35,(b.fMin-t.founder)*1.8);if(t.founder>b.fMax)s-=5;
+  if(t.pool<b.pMin)s-=15;if(t.pool>b.pMax)s-=20;
+  sh.filter(x=>TC[x.type]==='founder'&&!x.vesting).forEach(()=>s-=18);
+  sh.filter(x=>x.type==='advisor'&&parseFloat(x.pct)>1).forEach(()=>s-=12);
+  if(sh.filter(x=>!['investor','pool'].includes(x.type)&&parseFloat(x.pct)>0&&parseFloat(x.pct)<1).length>3)s-=10;
+  if(Math.abs(t.total-100)>1)s-=20;return Math.max(0,Math.min(100,Math.round(s)));}
+
+function alerts(sh,stage){const b=BM[stage];const t=totals(sh);const a=[];
+  if(Math.abs(t.total-100)>1)a.push({l:'danger',ti:'Cap table não fecha em 100%',de:`Total: ${t.total.toFixed(1)}%. Revise as participações antes de apresentar a investidores.`});
+  if(t.founder<b.fMin)a.push({l:'danger',ti:'Fundadores muito diluídos',de:`${t.founder.toFixed(1)}% abaixo do mínimo de ${b.fMin}% para ${SL[stage]}.`});
+  const nvf=sh.filter(x=>TC[x.type]==='founder'&&!x.vesting);if(nvf.length>0)a.push({l:'danger',ti:'Fundador sem vesting — red flag',de:`${nvf.map(x=>x.name).join(', ')} sem vesting. VCs exigem vesting para fundadores.`});
+  if(t.pool>15)a.push({l:'danger',ti:'Equity pool acima do limite',de:`Pool em ${t.pool.toFixed(1)}%. VCs esperam no máximo 15%.`});
+  if(t.pool<b.pMin&&t.pool>0)a.push({l:'warn',ti:'Equity pool insuficiente',de:`Pool em ${t.pool.toFixed(1)}%. Recomenda-se pelo menos ${b.pMin}% para ${SL[stage]}.`});
+  if(t.pool===0)a.push({l:'warn',ti:'Nenhum equity pool reservado',de:`Reserve entre ${b.pMin}% e ${b.pMax}% para atrair talentos.`});
+  sh.filter(x=>x.type==='advisor'&&parseFloat(x.pct)>1).forEach(x=>a.push({l:'warn',ti:'Advisor com participação excessiva',de:`${x.name} com ${parseFloat(x.pct).toFixed(1)}%. Máximo recomendado: 1%.`}));
+  if(sh.filter(x=>!['investor','pool'].includes(x.type)&&parseFloat(x.pct)>0&&parseFloat(x.pct)<1).length>3)a.push({l:'warn',ti:'Cap table fragmentado',de:'Muitos sócios com menos de 1% geram complexidade jurídica.'});
+  if(a.length===0)a.push({l:'ok',ti:'Cap table saudável',de:`Nenhum problema identificado para ${SL[stage]}.`});
+  return a;}
+
+function simRound(sh,stage,ps,vm){const t=totals(sh);const raised=(vm*ps)/(100-ps);return{pre:vm,raised,post:vm+raised,fa:t.founder*(1-ps/100),pa:t.pool*(1-ps/100),ok:t.founder*(1-ps/100)>=BM[stage].fMin};}
+
+function genVest(pct,years,cliff,sd){
+  const rows=[];const start=new Date(sd);const tm=years*12;const cm=cliff*12;let vested=0;
+  for(let m=1;m<=tm;m++){const d=new Date(start);d.setMonth(d.getMonth()+m);const nv=m<cm?0:(pct/tm)*m;const vc=Math.min(pct,nv);const delta=Math.max(0,vc-vested);vested=vc;
+    if(m===cm||m===tm||m%12===0)rows.push({m,date:d.toLocaleDateString('pt-BR',{month:'short',year:'numeric'}),vp:parseFloat(vc.toFixed(2)),dp:parseFloat(delta.toFixed(2)),isCliff:m===cm,isFull:m===tm,label:m===cm?'Cliff':m%12===0?`Ano ${m/12}`:''});}
+  return rows;}
+
+function exportPDF(st){
+  const{jsPDF}=window.jspdf;const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  const W=210,mg=20;let y=20;const t=totals(st.shareholders);const sc2=score(st.shareholders,st.stage);const al=alerts(st.shareholders,st.stage);
+  doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(150);doc.text('KVR CONSULTING · CAP TABLE HEALTH',mg,y);doc.text(new Date().toLocaleDateString('pt-BR'),W-mg,y,{align:'right'});y+=8;
+  doc.setDrawColor(220);doc.setLineWidth(0.4);doc.line(mg,y,W-mg,y);y+=10;
+  doc.setFont('helvetica','bold');doc.setFontSize(20);doc.setTextColor(26);doc.text(st.name,mg,y);y+=7;
+  doc.setFont('helvetica','normal');doc.setFontSize(11);doc.setTextColor(100);doc.text(`Relatório de saúde · ${SL[st.stage]}`,mg,y);y+=14;
+  const ms=[['Fundadores',`${t.founder.toFixed(1)}%`],['Pool',`${t.pool.toFixed(1)}%`],['Investidores',`${t.investor.toFixed(1)}%`],['Score',`${sc2}/100`]];
+  const bw=(W-mg*2-9)/4;
+  ms.forEach(([lb,vl],i)=>{const x=mg+i*(bw+3);doc.setFillColor(247,247,245);doc.roundedRect(x,y,bw,18,3,3,'F');doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(120);doc.text(lb,x+bw/2,y+6,{align:'center'});doc.setFont('helvetica','bold');doc.setFontSize(14);doc.setTextColor(26);doc.text(vl,x+bw/2,y+14,{align:'center'});});y+=26;
+  doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(130);doc.text('SÓCIOS',mg,y);y+=5;
+  doc.autoTable({startY:y,margin:{left:mg,right:mg},head:[['Nome','Cargo','%','Vesting']],body:st.shareholders.map(s=>[s.name,TL[s.type]||s.type,`${parseFloat(s.pct).toFixed(1)}%`,s.vesting?`${s.vestYears||4}a/cliff ${s.cliffYears||1}a`:'Não']),foot:[['Total','',`${t.total.toFixed(1)}%`,'']],styles:{fontSize:10,cellPadding:4},headStyles:{fillColor:[247,247,245],textColor:[80,80,80],fontStyle:'bold',fontSize:9},footStyles:{fillColor:[247,247,245],fontStyle:'bold'},columnStyles:{2:{halign:'right'}}});
+  y=doc.lastAutoTable.finalY+12;
+  doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(130);doc.text('DIAGNÓSTICO',mg,y);y+=6;
+  const lc={danger:[163,45,45],warn:[133,79,11],ok:[59,109,17],info:[24,95,165]};const lb2={danger:[252,235,235],warn:[250,238,218],ok:[234,243,222],info:[230,241,251]};
+  for(const a of al){const lines=doc.splitTextToSize(a.de,W-mg*2-14);const bh=16+lines.length*4.5;if(y+bh>270){doc.addPage();y=20;}doc.setFillColor(...(lb2[a.l]||lb2.info));doc.roundedRect(mg,y,W-mg*2,bh,3,3,'F');doc.setFillColor(...(lc[a.l]||lc.info));doc.circle(mg+5,y+7,2,'F');doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(...(lc[a.l]||lc.info));doc.text(a.ti,mg+10,y+7.5);doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(80);doc.text(lines,mg+10,y+13);y+=bh+4;}
+  doc.save(`${st.name.replace(/\s+/g,'_')}_CapTable.pdf`);}
+
+function useLS(key,init){
+  const[v,sv]=useState(()=>{try{const s=localStorage.getItem(key);return s?JSON.parse(s):init;}catch{return init;}});
+  useEffect(()=>{try{localStorage.setItem(key,JSON.stringify(v));}catch{}},[key,v]);return[v,sv];}
+
+const MC=({label,value,sub,color})=><div style={{background:'var(--bg2)',borderRadius:8,padding:'12px 14px',flex:1,minWidth:0}}><div style={{fontSize:11,color:'var(--text3)',marginBottom:3}}>{label}</div><div style={{fontSize:22,fontWeight:500,color:color||'var(--text)',lineHeight:1.2}}>{value}</div>{sub&&<div style={{fontSize:11,color:'var(--text3)',marginTop:2}}>{sub}</div>}</div>;
+const Card=({children,style:s={}})=><div style={{background:'var(--bg)',border:'0.5px solid var(--border)',borderRadius:12,padding:'1rem 1.25rem',...s}}>{children}</div>;
+const ST=({children})=><div style={{fontSize:11,fontWeight:500,color:'var(--text3)',textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:12}}>{children}</div>;
+
+function AlertsPanel({al,sc}){
+  const c=sc>=75?'var(--green)':sc>=50?'var(--amber)':'var(--red)';
+  const ls={danger:{bg:'var(--red-l)',text:'var(--red-t)',dot:'#E24B4A'},warn:{bg:'var(--amber-l)',text:'var(--amber-t)',dot:'#EF9F27'},ok:{bg:'var(--green-l)',text:'var(--green-t)',dot:'#639922'},info:{bg:'var(--blue-l)',text:'var(--blue-t)',dot:'#378ADD'}};
+  return <div>
+    <div style={{display:'flex',alignItems:'center',gap:14,marginBottom:16,padding:'12px 16px',background:'var(--bg2)',borderRadius:10}}>
+      <div style={{fontSize:36,fontWeight:600,color:c,lineHeight:1}}>{sc}</div>
+      <div><div style={{fontSize:13,fontWeight:500,color:c}}>{sc>=75?'Saudável':sc>=50?'Requer atenção':'Risco alto'}</div><div style={{fontSize:11,color:'var(--text3)',marginTop:2}}>pontuação de saúde</div></div>
+    </div>
+    <div style={{display:'flex',flexDirection:'column',gap:8}}>
+      {al.map((a,i)=>{const s=ls[a.l]||ls.info;return <div key={i} style={{background:s.bg,borderRadius:8,padding:'10px 12px',display:'flex',gap:10,alignItems:'flex-start'}}><div style={{width:7,height:7,borderRadius:'50%',background:s.dot,flexShrink:0,marginTop:4}}/><div><div style={{fontSize:12,fontWeight:500,color:s.text}}>{a.ti}</div><div style={{fontSize:12,color:s.text,marginTop:2,opacity:.85,lineHeight:1.5}}>{a.de}</div></div></div>;})}
+    </div>
+  </div>;}
+
+function CapTP({sh,onU,onD}){
+  const[add,setAdd]=useState(false);
+  const[form,setForm]=useState({name:'',type:'founder',pct:'',vesting:true,vestYears:4,cliffYears:1,startDate:new Date().toISOString().slice(0,10)});
+  const tot=sh.reduce((s,x)=>s+(parseFloat(x.pct)||0),0);
+  const tc=Math.abs(tot-100)<0.5?'var(--green)':'var(--red)';
+  const sf=(k,v)=>setForm(f=>({...f,[k]:v}));
+  const is={fontSize:13,padding:'5px 8px',border:'0.5px solid var(--border-md)',borderRadius:6,background:'var(--bg)',color:'var(--text)'};
+  return <div>
+    <div style={{overflowX:'auto'}}>
+      <table style={{width:'100%',borderCollapse:'collapse',fontSize:13}}>
+        <thead><tr style={{borderBottom:'0.5px solid var(--border)'}}>{['Nome','Tipo','%','Vesting','Bar',''].map(h=><th key={h} style={{padding:'6px 10px',textAlign:'left',fontSize:11,fontWeight:500,color:'var(--text3)'}}>{h}</th>)}</tr></thead>
+        <tbody>
+          {sh.map(s=>{const p=parseFloat(s.pct)||0;const bw=tot>0?Math.min(100,(p/tot)*100):0;const col=TCOL[s.type]||'#888';
+            return <tr key={s.id} style={{borderBottom:'0.5px solid var(--border)'}}>
+              <td style={{padding:'8px 10px',fontWeight:500}}>{s.name}</td>
+              <td style={{padding:'8px 10px'}}><span style={{fontSize:11,padding:'2px 8px',borderRadius:100,background:'var(--bg3)',color:'var(--text2)'}}>{TL[s.type]||s.type}</span></td>
+              <td style={{padding:'8px 10px'}}><input type="number" min={0} max={100} step={0.1} value={p.toFixed(1)} onChange={e=>onU('pct',{id:s.id,pct:parseFloat(e.target.value)||0})} style={{width:64,fontSize:13,padding:'4px 7px',border:'0.5px solid var(--border)',borderRadius:6,background:'var(--bg2)',color:'var(--text)',textAlign:'right'}}/></td>
+              <td style={{padding:'8px 10px'}}>{TC[s.type]!=='investor'?<span style={{fontSize:11,padding:'2px 8px',borderRadius:100,background:s.vesting?'var(--green-l)':'var(--red-l)',color:s.vesting?'var(--green-t)':'var(--red-t)'}}>{s.vesting?`${s.vestYears||4}a/cliff ${s.cliffYears||1}a`:'Sem vesting'}</span>:<span style={{fontSize:11,color:'var(--text3)'}}>—</span>}</td>
+              <td style={{padding:'8px 10px'}}><div style={{width:72,height:6,background:'var(--bg3)',borderRadius:3,overflow:'hidden'}}><div style={{width:`${bw}%`,height:'100%',background:col,borderRadius:3}}/></div></td>
+              <td style={{padding:'8px 10px'}}><button onClick={()=>onD(s.id)} style={{width:24,height:24,borderRadius:'50%',border:'0.5px solid var(--border)',background:'transparent',color:'var(--text3)',fontSize:16,display:'flex',alignItems:'center',justifyContent:'center',lineHeight:1}}>×</button></td>
+            </tr>;})}
+          {add&&<tr style={{background:'var(--blue-l)'}}>
+            <td style={{padding:'8px 10px'}}><input value={form.name} onChange={e=>sf('name',e.target.value)} placeholder="Nome" autoFocus style={{...is,width:'100%'}}/></td>
+            <td style={{padding:'8px 6px'}}><select value={form.type} onChange={e=>sf('type',e.target.value)} style={{...is,width:'100%'}}>{Object.entries(TL).map(([v,l])=><option key={v} value={v}>{l}</option>)}</select></td>
+            <td style={{padding:'8px 6px'}}><input type="number" value={form.pct} onChange={e=>sf('pct',e.target.value)} placeholder="%" min={0} max={100} step={0.1} style={{...is,width:64,textAlign:'right'}}/></td>
+            <td style={{padding:'8px 6px'}}><label style={{display:'flex',alignItems:'center',gap:6,fontSize:12,cursor:'pointer'}}><input type="checkbox" checked={form.vesting} onChange={e=>sf('vesting',e.target.checked)}/>{form.vesting?'Sim':'Não'}</label></td>
+            <td colSpan={2} style={{padding:'8px 10px'}}><div style={{display:'flex',gap:6}}>
+              <button onClick={()=>{if(form.name&&form.pct){onU('add',{...form,id:Date.now(),pct:parseFloat(form.pct)});setAdd(false);setForm({name:'',type:'founder',pct:'',vesting:true,vestYears:4,cliffYears:1,startDate:new Date().toISOString().slice(0,10)});}}} style={{fontSize:12,padding:'5px 14px',borderRadius:6,border:'none',background:'var(--blue)',color:'#fff'}}>Adicionar</button>
+              <button onClick={()=>setAdd(false)} style={{fontSize:12,padding:'5px 14px',borderRadius:6,border:'0.5px solid var(--border-md)',background:'transparent',color:'var(--text2)'}}>Cancelar</button>
+            </div></td>
+          </tr>}
+        </tbody>
+        <tfoot><tr style={{borderTop:'0.5px solid var(--border-md)'}}><td colSpan={2} style={{padding:'8px 10px',fontWeight:500}}>Total</td><td style={{padding:'8px 10px',fontWeight:600,fontSize:14,color:tc}}>{tot.toFixed(1)}%</td><td colSpan={3} style={{padding:'8px 10px',fontSize:11,color:'var(--text3)'}}>{Math.abs(tot-100)<0.5?'✓ Fechado':'Diferença: '+(tot-100).toFixed(1)+'%'}</td></tr></tfoot>
+      </table>
+    </div>
+    {!add&&<button onClick={()=>setAdd(true)} style={{marginTop:10,width:'100%',padding:'8px',fontSize:12,borderRadius:8,border:'0.5px dashed var(--border-md)',background:'transparent',color:'var(--text3)'}}>+ Adicionar sócio</button>}
+  </div>;}
+
+function VestP({sh}){
+  const el=sh.filter(s=>s.vesting&&TC[s.type]!=='investor'&&s.type!=='pool');
+  const[sel,setSel]=useState(null);
+  if(el.length===0)return <div style={{textAlign:'center',padding:'32px 16px',color:'var(--text3)',fontSize:13}}>Nenhum sócio com vesting configurado.</div>;
+  const p=sh.find(s=>s.id===sel)||el[0];
+  const sc2=genVest(parseFloat(p.pct),p.vestYears||4,p.cliffYears||1,p.startDate||'2024-01-01');
+  const mv=parseFloat(p.pct);const col=TCOL[p.type]||'#888';const cid=(sel||el[0].id);
+  return <div>
+    {el.length>1&&<div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:14}}>{el.map(s=><button key={s.id} onClick={()=>setSel(s.id)} style={{fontSize:12,padding:'4px 12px',borderRadius:100,border:cid===s.id?'none':'0.5px solid var(--border)',background:cid===s.id?col:'transparent',color:cid===s.id?'#fff':'var(--text2)',fontWeight:cid===s.id?500:400}}>{s.name}</button>)}</div>}
+    <div style={{display:'flex',alignItems:'baseline',gap:8,marginBottom:4}}><span style={{fontSize:20,fontWeight:500}}>{p.name}</span><span style={{fontSize:12,color:'var(--text3)'}}>{TL[p.type]}</span></div>
+    <div style={{fontSize:12,color:'var(--text3)',marginBottom:16}}>{parseFloat(p.pct).toFixed(1)}% · {p.vestYears||4} anos · cliff {p.cliffYears||1} ano</div>
+    <div style={{display:'flex',gap:1,alignItems:'flex-end',height:72,marginBottom:16}}>
+      {sc2.map((pt,i)=>{const bh=mv>0?(pt.vp/mv)*64:0;return <div key={i} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center'}} title={`${pt.date}: ${pt.vp.toFixed(1)}%`}><div style={{width:'70%',height:bh,background:pt.isCliff?col:`${col}88`,borderRadius:'3px 3px 0 0',minHeight:bh>0?2:0}}/><div style={{width:'100%',height:1,background:'var(--border)'}}/><div style={{fontSize:8,color:pt.isCliff?col:'var(--text3)',fontWeight:pt.isCliff?600:400,marginTop:2,textAlign:'center'}}>{pt.isCliff?'Cliff':''}</div></div>;})}
+    </div>
+    <div style={{overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',fontSize:12}}>
+      <thead><tr style={{borderBottom:'0.5px solid var(--border)'}}>{['Período','Data','Adquirido','Acumulado','%'].map(h=><th key={h} style={{padding:'5px 8px',textAlign:'left',fontSize:10,fontWeight:500,color:'var(--text3)'}}>{h}</th>)}</tr></thead>
+      <tbody>{sc2.map((pt,i)=><tr key={i} style={{borderBottom:'0.5px solid var(--border)',background:pt.isCliff?'var(--blue-l)':pt.isFull?'var(--green-l)':'transparent'}}>
+        <td style={{padding:'6px 8px',fontWeight:pt.isCliff||pt.isFull?500:400,color:pt.isCliff?'var(--blue-t)':pt.isFull?'var(--green-t)':'var(--text)'}}>{pt.label||`Mês ${pt.m}`}</td>
+        <td style={{padding:'6px 8px',color:'var(--text2)'}}>{pt.date}</td>
+        <td style={{padding:'6px 8px',color:pt.dp>0?col:'var(--text3)'}}>{pt.dp>0?`+${pt.dp.toFixed(2)}%`:'—'}</td>
+        <td style={{padding:'6px 8px',fontWeight:500}}>{pt.vp.toFixed(2)}%</td>
+        <td style={{padding:'6px 8px'}}><div style={{display:'flex',alignItems:'center',gap:6}}><div style={{flex:1,height:4,background:'var(--bg3)',borderRadius:2,overflow:'hidden'}}><div style={{width:`${mv>0?(pt.vp/mv)*100:0}%`,height:'100%',background:col,borderRadius:2}}/></div><span style={{fontSize:10,color:'var(--text3)',width:30}}>{mv>0?Math.round((pt.vp/mv)*100):0}%</span></div></td>
+      </tr>)}</tbody>
+    </table></div>
+  </div>;}
+
+function SimP({sh,stage}){
+  const[ps,setPs]=useState(15);const[vm,setVm]=useState(20);
+  const r=simRound(sh,stage,ps,vm);const b=BM[stage];
+  const fmt=n=>n>=1000?`R$ ${(n/1000).toFixed(1)}B`:`R$ ${n.toFixed(1)}M`;
+  return <div>
+    <div style={{display:'flex',flexDirection:'column',gap:14,marginBottom:16}}>
+      <div><div style={{display:'flex',justifyContent:'space-between',marginBottom:5}}><label style={{fontSize:12,color:'var(--text2)'}}>% a vender</label><span style={{fontSize:13,fontWeight:500}}>{ps}%</span></div><input type="range" min={1} max={40} step={1} value={ps} onChange={e=>setPs(Number(e.target.value))}/><div style={{display:'flex',justifyContent:'space-between',fontSize:10,color:'var(--text3)',marginTop:2}}><span>1%</span><span>ref: {b.iMin}–{b.iMax}%</span><span>40%</span></div></div>
+      <div><div style={{display:'flex',justifyContent:'space-between',marginBottom:5}}><label style={{fontSize:12,color:'var(--text2)'}}>Valuation pre-money</label><span style={{fontSize:13,fontWeight:500}}>{fmt(vm)}</span></div><input type="range" min={1} max={500} step={1} value={vm} onChange={e=>setVm(Number(e.target.value))}/><div style={{display:'flex',justifyContent:'space-between',fontSize:10,color:'var(--text3)',marginTop:2}}><span>R$ 1M</span><span>R$ 500M</span></div></div>
+    </div>
+    <div style={{background:'var(--bg2)',borderRadius:10,overflow:'hidden',border:'0.5px solid var(--border)'}}>
+      {[['Pre-money',fmt(r.pre),false],['Capital captado',fmt(r.raised),false],['Post-money',fmt(r.post),false],['Fundadores após rodada',`${r.fa.toFixed(1)}%`,!r.ok],['Pool após rodada',`${r.pa.toFixed(1)}%`,false]].map(([lb,vl,warn],i,arr)=><div key={lb} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'9px 14px',borderBottom:i<arr.length-1?'0.5px solid var(--border)':'none',fontWeight:i>=arr.length-2?500:400}}><span style={{fontSize:12,color:'var(--text2)'}}>{lb}</span><span style={{fontSize:13,color:warn?'var(--red)':'var(--text)'}}>{vl}{warn&&<span style={{fontSize:10,marginLeft:4,color:'var(--red)'}}>⚠ abaixo do mínimo</span>}</span></div>)}
+    </div>
+  </div>;}
+
+const DEF={name:'Minha Startup',stage:'pre-seed',shareholders:[
+  {id:1,name:'Ana Lima',type:'founder',pct:44,vesting:true,vestYears:4,cliffYears:1,startDate:'2024-01-01'},
+  {id:2,name:'Bruno Costa',type:'founder',pct:43,vesting:true,vestYears:4,cliffYears:1,startDate:'2024-01-01'},
+  {id:3,name:'Equity Pool',type:'pool',pct:13,vesting:false,vestYears:4,cliffYears:1,startDate:'2024-01-01'}]};
+const STAGES=Object.entries(SL);const TABS=['Cap Table','Vesting','Simulador'];
+
+function App(){
+  const[st,setSt]=useLS('cth-v3',DEF);const[tab,setTab]=useState(0);const[en,setEn]=useState(false);
+  const t=useMemo(()=>totals(st.shareholders),[st.shareholders]);
+  const sc=useMemo(()=>score(st.shareholders,st.stage),[st.shareholders,st.stage]);
+  const al=useMemo(()=>alerts(st.shareholders,st.stage),[st.shareholders,st.stage]);
+  const cc=sc>=75?'var(--green)':sc>=50?'var(--amber)':'var(--red)';
+  const upd=(action,payload)=>setSt(s=>{if(action==='pct')return{...s,shareholders:s.shareholders.map(x=>x.id===payload.id?{...x,pct:payload.pct}:x)};if(action==='add')return{...s,shareholders:[...s.shareholders,payload]};return s;});
+  const del=id=>setSt(s=>({...s,shareholders:s.shareholders.filter(x=>x.id!==id)}));
+  const b=BM[st.stage];
+  return <div style={{minHeight:'100vh',background:'var(--bg2)'}}>
+    <div style={{maxWidth:1100,margin:'0 auto',padding:'0 20px 40px'}}>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'16px 0',borderBottom:'0.5px solid var(--border)',flexWrap:'wrap',gap:10}}>
+        <div style={{display:'flex',alignItems:'center',gap:10}}>
+          <span style={{fontSize:15,fontWeight:500}}>Cap Table <span style={{color:'var(--text3)',fontWeight:400}}>Health</span></span>
+          <div style={{width:1,height:16,background:'var(--border-md)'}}/>
+          {en?<input autoFocus value={st.name} onChange={e=>setSt(s=>({...s,name:e.target.value}))} onBlur={()=>setEn(false)} onKeyDown={e=>e.key==='Enter'&&setEn(false)} style={{fontSize:14,fontWeight:500,border:'none',borderBottom:'1.5px solid var(--blue)',background:'transparent',color:'var(--text)',outline:'none',width:200}}/>:<span onClick={()=>setEn(true)} title="Editar nome" style={{fontSize:14,fontWeight:500,cursor:'text'}}>{st.name}</span>}
+        </div>
+        <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
+          <div style={{display:'flex',gap:4}}>{STAGES.map(([k,l])=><button key={k} onClick={()=>setSt(s=>({...s,stage:k}))} style={{fontSize:11,padding:'5px 11px',borderRadius:100,border:st.stage===k?'none':'0.5px solid var(--border)',background:st.stage===k?'var(--text)':'transparent',color:st.stage===k?'var(--bg)':'var(--text2)',fontWeight:st.stage===k?500:400}}>{l}</button>)}</div>
+          <button onClick={()=>exportPDF(st)} style={{fontSize:12,padding:'6px 14px',borderRadius:8,border:'0.5px solid var(--border-md)',background:'transparent',color:'var(--text2)',display:'flex',alignItems:'center',gap:5}}>
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 12h10M8 3v7M5 7l3 3 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            Exportar PDF
+          </button>
+        </div>
+      </div>
+      <div style={{display:'flex',gap:10,margin:'16px 0',flexWrap:'wrap'}}>
+        <MC label="Fundadores" value={`${t.founder.toFixed(1)}%`} sub={`ref: ${b.fMin}–${b.fMax}%`} color={t.founder>=b.fMin?'var(--green)':t.founder>=b.fMin-15?'var(--amber)':'var(--red)'}/>
+        <MC label="Equity pool" value={`${t.pool.toFixed(1)}%`} sub="ref: 10–15%" color={t.pool>=8&&t.pool<=15?'var(--green)':'var(--amber)'}/>
+        <MC label="Investidores" value={`${t.investor.toFixed(1)}%`} sub="total"/>
+        <MC label="Score de saúde" value={`${sc}/100`} sub={sc>=75?'Saudável':sc>=50?'Atenção':'Crítico'} color={cc}/>
+        {al.filter(a=>a.l==='danger').length>0&&<MC label="Alertas críticos" value={al.filter(a=>a.l==='danger').length} sub={`+ ${al.filter(a=>a.l==='warn').length} avisos`} color="var(--red)"/>}
+      </div>
+      <div style={{display:'grid',gridTemplateColumns:'minmax(0,1fr) 320px',gap:12,alignItems:'start'}}>
+        <Card>
+          <div style={{display:'flex',marginBottom:16,borderBottom:'0.5px solid var(--border)'}}>
+            {TABS.map((tb,i)=><button key={tb} onClick={()=>setTab(i)} style={{fontSize:13,padding:'8px 16px',border:'none',borderBottom:tab===i?'2px solid var(--blue)':'2px solid transparent',background:'transparent',color:tab===i?'var(--blue)':'var(--text2)',fontWeight:tab===i?500:400,marginBottom:-1}}>{tb}</button>)}
+          </div>
+          {tab===0&&<CapTP sh={st.shareholders} onU={upd} onD={del}/>}
+          {tab===1&&<VestP sh={st.shareholders}/>}
+          {tab===2&&<SimP sh={st.shareholders} stage={st.stage}/>}
+        </Card>
+        <Card><ST>Diagnóstico</ST><AlertsPanel al={al} sc={sc}/></Card>
+      </div>
+      <div style={{marginTop:24,fontSize:11,color:'var(--text3)',textAlign:'center'}}>KVR Consulting · Cap Table Health · Dados salvos no navegador · Apenas para referência</div>
+    </div>
+  </div>;}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
