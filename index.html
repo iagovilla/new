@@ -4,7 +4,6 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Cap Table Health — KVR Consulting</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -14,78 +13,199 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Inter',sans-serif;font-size:14px;background:#f7f7f5;color:#1a1a1a;line-height:1.5}
-:root{--bg:#fff;--bg2:#f7f7f5;--bg3:#f0f0ec;--border:rgba(0,0,0,0.1);--border-md:rgba(0,0,0,0.18);--text:#1a1a1a;--text2:#555;--text3:#999;--blue:#185FA5;--blue-l:#E6F1FB;--blue-t:#0C447C;--teal:#0F6E56;--teal-l:#E1F5EE;--teal-t:#085041;--amber:#854F0B;--amber-l:#FAEEDA;--amber-t:#633806;--red:#A32D2D;--red-l:#FCEBEB;--red-t:#791F1F;--green:#3B6D11;--green-l:#EAF3DE;--green-t:#27500A}
-@media(prefers-color-scheme:dark){:root{--bg:#1c1c1c;--bg2:#252525;--bg3:#2e2e2e;--border:rgba(255,255,255,0.1);--border-md:rgba(255,255,255,0.18);--text:#f0f0f0;--text2:#aaa;--text3:#666;--blue-l:#0c2d52;--blue-t:#85B7EB;--teal-l:#04342C;--teal-t:#9FE1CB;--amber-l:#412402;--amber-t:#FAC775;--red-l:#501313;--red-t:#F09595;--green-l:#173404;--green-t:#C0DD97}}
-button{font-family:inherit;cursor:pointer}input,select{font-family:inherit}
-input[type=range]{accent-color:var(--blue);width:100%}
+:root{--bg:#fff;--bg2:#f7f7f5;--bg3:#f0f0ec;--border:rgba(0,0,0,0.09);--border-md:rgba(0,0,0,0.16);--text:#1a1a1a;--text2:#555;--text3:#999;--blue:#185FA5;--blue-l:#E6F1FB;--blue-t:#0C447C;--amber:#854F0B;--amber-l:#FAEEDA;--amber-t:#633806;--red:#A32D2D;--red-l:#FCEBEB;--red-t:#791F1F;--green:#3B6D11;--green-l:#EAF3DE;--green-t:#27500A;--purple:#534AB7;--purple-l:#EEEDFE;--purple-t:#3C3489}
+@media(prefers-color-scheme:dark){:root{--bg:#1c1c1c;--bg2:#252525;--bg3:#2e2e2e;--border:rgba(255,255,255,0.08);--border-md:rgba(255,255,255,0.16);--text:#f0f0f0;--text2:#aaa;--text3:#666;--blue-l:#0c2d52;--blue-t:#85B7EB;--amber-l:#412402;--amber-t:#FAC775;--red-l:#501313;--red-t:#F09595;--green-l:#173404;--green-t:#C0DD97;--purple-l:#26215C;--purple-t:#AFA9EC}}
+button{font-family:inherit;cursor:pointer}input,select,textarea{font-family:inherit}
+input[type=range]{accent-color:var(--blue);width:100%}input[type=checkbox]{accent-color:var(--blue);width:14px;height:14px;cursor:pointer}
 ::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-thumb{background:var(--border-md);border-radius:3px}
+.mo{position:fixed;inset:0;background:rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px}
+.mb{background:var(--bg);border-radius:16px;padding:1.5rem;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;border:0.5px solid var(--border-md)}
+.mt{font-size:16px;font-weight:500;margin-bottom:1.25rem;color:var(--text)}
+.mg{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.fl{grid-column:1/-1}
+.fl label,.sd{display:block;font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+.sd{grid-column:1/-1;padding-top:8px;border-top:0.5px solid var(--border);margin-top:4px}
+.fi{width:100%;font-size:13px;padding:8px 10px;border:0.5px solid var(--border-md);border-radius:8px;background:var(--bg2);color:var(--text);outline:none}
+.fi:focus{border-color:var(--blue)}
+select.fi{appearance:none;background-image:url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23999' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px}
+.bp{font-size:13px;padding:9px 20px;border:none;background:var(--blue);color:#fff;font-weight:500;border-radius:8px;cursor:pointer}
+.bs{font-size:13px;padding:9px 20px;border:0.5px solid var(--border-md);background:transparent;color:var(--text2);border-radius:8px;cursor:pointer}
+.bd{font-size:13px;padding:9px 20px;border:none;background:var(--red-l);color:var(--red-t);border-radius:8px;font-weight:500;cursor:pointer}
+.cr{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;cursor:pointer}
+.cr:hover{background:var(--bg2)}
 </style>
 </head>
 <body>
-<div id="root"><div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:Inter,sans-serif;color:#999;font-size:13px">Carregando...</div></div>
+<div id="root"><div style="display:flex;align-items:center;justify-content:center;height:100vh;color:#999;font-size:13px">Carregando...</div></div>
 <script type="text/babel" data-presets="react">
-const {useState,useEffect,useMemo}=React;
+const {useState,useEffect,useMemo,useCallback}=React;
 const TL={founder:'Fundador','cofound-tech':'Cofundador técnico',cto:'CTO contratado',clevel:'C-Level',manager:'Gerente estratégico',advisor:'Advisor',investor:'Investidor',pool:'Equity Pool'};
 const TC={founder:'founder','cofound-tech':'founder',cto:'employee',clevel:'employee',manager:'employee',advisor:'advisor',investor:'investor',pool:'pool'};
 const SL={'pre-seed':'Pre-Seed',seed:'Seed','series-a':'Series A','series-b':'Series B'};
 const BM={'pre-seed':{fMin:75,fMax:90,pMin:10,pMax:15,iMin:5,iMax:15},seed:{fMin:60,fMax:80,pMin:8,pMax:15,iMin:10,iMax:25},'series-a':{fMin:45,fMax:65,pMin:8,pMax:15,iMin:25,iMax:45},'series-b':{fMin:35,fMax:55,pMin:8,pMax:15,iMin:40,iMax:60}};
 const TCOL={founder:'#185FA5','cofound-tech':'#185FA5',pool:'#0F6E56',investor:'#854F0B',cto:'#534AB7',clevel:'#534AB7',manager:'#888780',advisor:'#888780'};
+const INSTR=['Equity','SAFE','CLA','Debênture Conversível','Nota Conversível'];
+const RIGHTS=['Pro-rata','Liquidation Preference 1x','Liquidation Preference 2x','Board Seat','Anti-diluição (ratchet)','Tag Along','Drag Along','Veto estratégico'];
+const pp=s=>parseFloat(s)||0;
 
-function totals(sh){const t={founder:0,employee:0,investor:0,pool:0,total:0};for(const s of sh){const c=TC[s.type]||'employee';const p=parseFloat(s.pct)||0;t[c]=(t[c]||0)+p;t.total+=p;}return t;}
-
-function score(sh,stage){const b=BM[stage];const t=totals(sh);let s=100;
-  if(t.founder<b.fMin)s-=Math.min(35,(b.fMin-t.founder)*1.8);if(t.founder>b.fMax)s-=5;
-  if(t.pool<b.pMin)s-=15;if(t.pool>b.pMax)s-=20;
-  sh.filter(x=>TC[x.type]==='founder'&&!x.vesting).forEach(()=>s-=18);
-  sh.filter(x=>x.type==='advisor'&&parseFloat(x.pct)>1).forEach(()=>s-=12);
-  if(sh.filter(x=>!['investor','pool'].includes(x.type)&&parseFloat(x.pct)>0&&parseFloat(x.pct)<1).length>3)s-=10;
-  if(Math.abs(t.total-100)>1)s-=20;return Math.max(0,Math.min(100,Math.round(s)));}
-
-function alerts(sh,stage){const b=BM[stage];const t=totals(sh);const a=[];
-  if(Math.abs(t.total-100)>1)a.push({l:'danger',ti:'Cap table não fecha em 100%',de:`Total: ${t.total.toFixed(1)}%. Revise as participações antes de apresentar a investidores.`});
-  if(t.founder<b.fMin)a.push({l:'danger',ti:'Fundadores muito diluídos',de:`${t.founder.toFixed(1)}% abaixo do mínimo de ${b.fMin}% para ${SL[stage]}.`});
-  const nvf=sh.filter(x=>TC[x.type]==='founder'&&!x.vesting);if(nvf.length>0)a.push({l:'danger',ti:'Fundador sem vesting — red flag',de:`${nvf.map(x=>x.name).join(', ')} sem vesting. VCs exigem vesting para fundadores.`});
-  if(t.pool>15)a.push({l:'danger',ti:'Equity pool acima do limite',de:`Pool em ${t.pool.toFixed(1)}%. VCs esperam no máximo 15%.`});
-  if(t.pool<b.pMin&&t.pool>0)a.push({l:'warn',ti:'Equity pool insuficiente',de:`Pool em ${t.pool.toFixed(1)}%. Recomenda-se pelo menos ${b.pMin}% para ${SL[stage]}.`});
-  if(t.pool===0)a.push({l:'warn',ti:'Nenhum equity pool reservado',de:`Reserve entre ${b.pMin}% e ${b.pMax}% para atrair talentos.`});
-  sh.filter(x=>x.type==='advisor'&&parseFloat(x.pct)>1).forEach(x=>a.push({l:'warn',ti:'Advisor com participação excessiva',de:`${x.name} com ${parseFloat(x.pct).toFixed(1)}%. Máximo recomendado: 1%.`}));
-  if(sh.filter(x=>!['investor','pool'].includes(x.type)&&parseFloat(x.pct)>0&&parseFloat(x.pct)<1).length>3)a.push({l:'warn',ti:'Cap table fragmentado',de:'Muitos sócios com menos de 1% geram complexidade jurídica.'});
-  if(a.length===0)a.push({l:'ok',ti:'Cap table saudável',de:`Nenhum problema identificado para ${SL[stage]}.`});
-  return a;}
-
-function simRound(sh,stage,ps,vm){const t=totals(sh);const raised=(vm*ps)/(100-ps);return{pre:vm,raised,post:vm+raised,fa:t.founder*(1-ps/100),pa:t.pool*(1-ps/100),ok:t.founder*(1-ps/100)>=BM[stage].fMin};}
-
-function genVest(pct,years,cliff,sd){
-  const rows=[];const start=new Date(sd);const tm=years*12;const cm=cliff*12;let vested=0;
-  for(let m=1;m<=tm;m++){const d=new Date(start);d.setMonth(d.getMonth()+m);const nv=m<cm?0:(pct/tm)*m;const vc=Math.min(pct,nv);const delta=Math.max(0,vc-vested);vested=vc;
-    if(m===cm||m===tm||m%12===0)rows.push({m,date:d.toLocaleDateString('pt-BR',{month:'short',year:'numeric'}),vp:parseFloat(vc.toFixed(2)),dp:parseFloat(delta.toFixed(2)),isCliff:m===cm,isFull:m===tm,label:m===cm?'Cliff':m%12===0?`Ano ${m/12}`:''});}
-  return rows;}
+function totals(sh){const t={founder:0,employee:0,investor:0,pool:0,total:0};for(const s of sh){const c=TC[s.type]||'employee';const p=pp(s.pct);t[c]=(t[c]||0)+p;t.total+=p;}return t;}
+function calcScore(sh,stage){const b=BM[stage];const t=totals(sh);let s=100;if(t.founder<b.fMin)s-=Math.min(35,(b.fMin-t.founder)*1.8);if(t.founder>b.fMax)s-=5;if(t.pool<b.pMin)s-=15;if(t.pool>b.pMax)s-=20;sh.filter(x=>TC[x.type]==='founder'&&!x.vesting).forEach(()=>s-=18);sh.filter(x=>x.type==='advisor'&&pp(x.pct)>1).forEach(()=>s-=12);if(sh.filter(x=>!['investor','pool'].includes(x.type)&&pp(x.pct)>0&&pp(x.pct)<1).length>3)s-=10;if(Math.abs(t.total-100)>1)s-=20;return Math.max(0,Math.min(100,Math.round(s)));}
+function getAlerts(sh,stage){const b=BM[stage];const t=totals(sh);const a=[];if(Math.abs(t.total-100)>1)a.push({l:'danger',ti:'Cap table não fecha em 100%',de:`Total: ${t.total.toFixed(1)}%. Revise as participações.`});if(t.founder<b.fMin)a.push({l:'danger',ti:'Fundadores muito diluídos',de:`${t.founder.toFixed(1)}% abaixo do mínimo de ${b.fMin}% para ${SL[stage]}.`});const nvf=sh.filter(x=>TC[x.type]==='founder'&&!x.vesting);if(nvf.length>0)a.push({l:'danger',ti:'Fundador sem vesting',de:`${nvf.map(x=>x.name).join(', ')} sem vesting — red flag para VCs.`});if(t.pool>15)a.push({l:'danger',ti:'Equity pool acima do limite',de:`Pool em ${t.pool.toFixed(1)}%. VCs esperam no máximo 15%.`});if(t.pool<b.pMin&&t.pool>0)a.push({l:'warn',ti:'Equity pool insuficiente',de:`Pool em ${t.pool.toFixed(1)}%. Recomenda-se ${b.pMin}% para ${SL[stage]}.`});if(t.pool===0)a.push({l:'warn',ti:'Nenhum equity pool reservado',de:`Reserve entre ${b.pMin}% e ${b.pMax}% para talentos.`});sh.filter(x=>x.type==='advisor'&&pp(x.pct)>1).forEach(x=>a.push({l:'warn',ti:'Advisor com participação excessiva',de:`${x.name} com ${pp(x.pct).toFixed(1)}%. Máximo: 1%.`}));if(sh.filter(x=>!['investor','pool'].includes(x.type)&&pp(x.pct)>0&&pp(x.pct)<1).length>3)a.push({l:'warn',ti:'Cap table fragmentado',de:'Muitos sócios com menos de 1%.'});if(a.length===0)a.push({l:'ok',ti:'Cap table saudável',de:`Nenhum problema para ${SL[stage]}.`});return a;}
+function genVesting(pct,years,cliff,sd,gran){const rows=[];const start=new Date(sd);const tm=years*12;const cm=cliff*12;let vested=0;for(let m=1;m<=tm;m++){const d=new Date(start);d.setMonth(d.getMonth()+m);const nv=m<cm?0:(pct/tm)*m;const vc=Math.min(pct,nv);const delta=Math.max(0,vc-vested);vested=vc;const show=gran==='monthly'||(m===cm||m===tm||m%12===0);if(show)rows.push({m,date:d.toLocaleDateString('pt-BR',{month:'short',year:'numeric'}),vp:parseFloat(vc.toFixed(3)),dp:parseFloat(delta.toFixed(3)),isCliff:m===cm,isFull:m===tm,label:m===cm?'Cliff':m%12===0?`Ano ${m/12}`:''});}return rows;}
 
 function exportPDF(st){
-  const{jsPDF}=window.jspdf;const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-  const W=210,mg=20;let y=20;const t=totals(st.shareholders);const sc2=score(st.shareholders,st.stage);const al=alerts(st.shareholders,st.stage);
-  doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(150);doc.text('KVR CONSULTING · CAP TABLE HEALTH',mg,y);doc.text(new Date().toLocaleDateString('pt-BR'),W-mg,y,{align:'right'});y+=8;
-  doc.setDrawColor(220);doc.setLineWidth(0.4);doc.line(mg,y,W-mg,y);y+=10;
-  doc.setFont('helvetica','bold');doc.setFontSize(20);doc.setTextColor(26);doc.text(st.name,mg,y);y+=7;
-  doc.setFont('helvetica','normal');doc.setFontSize(11);doc.setTextColor(100);doc.text(`Relatório de saúde · ${SL[st.stage]}`,mg,y);y+=14;
-  const ms=[['Fundadores',`${t.founder.toFixed(1)}%`],['Pool',`${t.pool.toFixed(1)}%`],['Investidores',`${t.investor.toFixed(1)}%`],['Score',`${sc2}/100`]];
-  const bw=(W-mg*2-9)/4;
+  const{jsPDF}=window.jspdf;const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});const W=210,mg=20;let y=20;
+  const t=totals(st.shareholders);const sc=calcScore(st.shareholders,st.stage);const al=getAlerts(st.shareholders,st.stage);
+  doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(150);doc.text('KVR CONSULTING · CAP TABLE HEALTH',mg,y);doc.text(new Date().toLocaleDateString('pt-BR'),W-mg,y,{align:'right'});y+=8;doc.setDrawColor(220);doc.line(mg,y,W-mg,y);y+=10;
+  doc.setFont('helvetica','bold');doc.setFontSize(20);doc.setTextColor(26);doc.text(st.name,mg,y);y+=7;doc.setFont('helvetica','normal');doc.setFontSize(11);doc.setTextColor(100);doc.text(`Relatório · ${SL[st.stage]}`,mg,y);y+=14;
+  const ms=[['Fundadores',`${t.founder.toFixed(1)}%`],['Pool',`${t.pool.toFixed(1)}%`],['Investidores',`${t.investor.toFixed(1)}%`],['Score',`${sc}/100`]];const bw=(W-mg*2-9)/4;
   ms.forEach(([lb,vl],i)=>{const x=mg+i*(bw+3);doc.setFillColor(247,247,245);doc.roundedRect(x,y,bw,18,3,3,'F');doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(120);doc.text(lb,x+bw/2,y+6,{align:'center'});doc.setFont('helvetica','bold');doc.setFontSize(14);doc.setTextColor(26);doc.text(vl,x+bw/2,y+14,{align:'center'});});y+=26;
-  doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(130);doc.text('SÓCIOS',mg,y);y+=5;
-  doc.autoTable({startY:y,margin:{left:mg,right:mg},head:[['Nome','Cargo','%','Vesting']],body:st.shareholders.map(s=>[s.name,TL[s.type]||s.type,`${parseFloat(s.pct).toFixed(1)}%`,s.vesting?`${s.vestYears||4}a/cliff ${s.cliffYears||1}a`:'Não']),foot:[['Total','',`${t.total.toFixed(1)}%`,'']],styles:{fontSize:10,cellPadding:4},headStyles:{fillColor:[247,247,245],textColor:[80,80,80],fontStyle:'bold',fontSize:9},footStyles:{fillColor:[247,247,245],fontStyle:'bold'},columnStyles:{2:{halign:'right'}}});
-  y=doc.lastAutoTable.finalY+12;
+  doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(130);doc.text('SÓCIOS & PARTICIPAÇÕES',mg,y);y+=5;
+  doc.autoTable({startY:y,margin:{left:mg,right:mg},head:[['Nome','Cargo','%','Vesting']],body:st.shareholders.map(s=>[s.name,TL[s.type]||s.type,`${pp(s.pct).toFixed(1)}%`,s.vesting?`${s.vestYears||4}a/cliff ${s.cliffYears||1}a (${s.vestGranularity==='monthly'?'mensal':'anual'})`:'Não']),foot:[['Total','',`${t.total.toFixed(1)}%`,'']],styles:{fontSize:9,cellPadding:3.5},headStyles:{fillColor:[247,247,245],textColor:[80,80,80],fontStyle:'bold',fontSize:8},footStyles:{fillColor:[247,247,245],fontStyle:'bold'},columnStyles:{2:{halign:'right'}}});
+  y=doc.lastAutoTable.finalY+10;
+  const investors=st.shareholders.filter(s=>s.type==='investor');
+  if(investors.length>0){doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(130);doc.text('INVESTIDORES',mg,y);y+=5;doc.autoTable({startY:y,margin:{left:mg,right:mg},head:[['Investidor','Fundo','Instrumento','Valor','Pre-money','%','Data']],body:investors.map(s=>[s.name,s.fundName||'—',s.instrument||'—',s.investedAmount?`R$ ${Number(s.investedAmount).toLocaleString('pt-BR')}`:'—',s.preMoneyValuation?`R$ ${Number(s.preMoneyValuation).toLocaleString('pt-BR')}`:'—',`${pp(s.pct).toFixed(1)}%`,s.investmentDate?new Date(s.investmentDate).toLocaleDateString('pt-BR'):'—']),styles:{fontSize:8,cellPadding:3},headStyles:{fillColor:[250,238,218],textColor:[99,56,6],fontStyle:'bold',fontSize:7.5}});y=doc.lastAutoTable.finalY+10;}
+  if(y>240){doc.addPage();y=20;}
   doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(130);doc.text('DIAGNÓSTICO',mg,y);y+=6;
-  const lc={danger:[163,45,45],warn:[133,79,11],ok:[59,109,17],info:[24,95,165]};const lb2={danger:[252,235,235],warn:[250,238,218],ok:[234,243,222],info:[230,241,251]};
-  for(const a of al){const lines=doc.splitTextToSize(a.de,W-mg*2-14);const bh=16+lines.length*4.5;if(y+bh>270){doc.addPage();y=20;}doc.setFillColor(...(lb2[a.l]||lb2.info));doc.roundedRect(mg,y,W-mg*2,bh,3,3,'F');doc.setFillColor(...(lc[a.l]||lc.info));doc.circle(mg+5,y+7,2,'F');doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(...(lc[a.l]||lc.info));doc.text(a.ti,mg+10,y+7.5);doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(80);doc.text(lines,mg+10,y+13);y+=bh+4;}
+  const lc={danger:[163,45,45],warn:[133,79,11],ok:[59,109,17],info:[24,95,165]};const lb={danger:[252,235,235],warn:[250,238,218],ok:[234,243,222],info:[230,241,251]};
+  for(const a of al){const lines=doc.splitTextToSize(a.de,W-mg*2-14);const bh=16+lines.length*4.5;if(y+bh>270){doc.addPage();y=20;}doc.setFillColor(...(lb[a.l]||lb.info));doc.roundedRect(mg,y,W-mg*2,bh,3,3,'F');doc.setFillColor(...(lc[a.l]||lc.info));doc.circle(mg+5,y+7,2,'F');doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(...(lc[a.l]||lc.info));doc.text(a.ti,mg+10,y+7.5);doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(80);doc.text(lines,mg+10,y+13);y+=bh+4;}
   doc.save(`${st.name.replace(/\s+/g,'_')}_CapTable.pdf`);}
 
-function useLS(key,init){
-  const[v,sv]=useState(()=>{try{const s=localStorage.getItem(key);return s?JSON.parse(s):init;}catch{return init;}});
-  useEffect(()=>{try{localStorage.setItem(key,JSON.stringify(v));}catch{}},[key,v]);return[v,sv];}
-
+function useLS(key,init){const[v,sv]=useState(()=>{try{const s=localStorage.getItem(key);return s?JSON.parse(s):init;}catch{return init;}});useEffect(()=>{try{localStorage.setItem(key,JSON.stringify(v));}catch{}},[key,v]);return[v,sv];}
 const MC=({label,value,sub,color})=><div style={{background:'var(--bg2)',borderRadius:8,padding:'12px 14px',flex:1,minWidth:0}}><div style={{fontSize:11,color:'var(--text3)',marginBottom:3}}>{label}</div><div style={{fontSize:22,fontWeight:500,color:color||'var(--text)',lineHeight:1.2}}>{value}</div>{sub&&<div style={{fontSize:11,color:'var(--text3)',marginTop:2}}>{sub}</div>}</div>;
 const Card=({children,style:s={}})=><div style={{background:'var(--bg)',border:'0.5px solid var(--border)',borderRadius:12,padding:'1rem 1.25rem',...s}}>{children}</div>;
 const ST=({children})=><div style={{fontSize:11,fontWeight:500,color:'var(--text3)',textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:12}}>{children}</div>;
+const FLabel=({children})=><label style={{display:'block',fontSize:10,fontWeight:600,color:'var(--text3)',textTransform:'uppercase',letterSpacing:'.05em',marginBottom:4}}>{children}</label>;
+
+function DilutionModal({newPct,newName,shareholders,onConfirm,onCancel}){
+  const dilutable=shareholders.filter(s=>TC[s.type]!=='investor');
+  const[selected,setSelected]=useState(()=>new Set(dilutable.filter(s=>TC[s.type]==='founder'||s.type==='pool').map(s=>s.id)));
+  const tot=shareholders.reduce((s,x)=>s+pp(x.pct),0);
+  const remaining=Math.max(0,100-tot);
+  const needed=Math.max(0,newPct-remaining);
+  const selTotal=dilutable.filter(s=>selected.has(s.id)).reduce((s,x)=>s+pp(x.pct),0);
+  function preview(){return shareholders.map(s=>{if(!selected.has(s.id))return{...s,newPct:pp(s.pct)};const share=selTotal>0?pp(s.pct)/selTotal:0;const cede=needed*share;return{...s,newPct:Math.max(0,pp(s.pct)-cede),cede:parseFloat(cede.toFixed(3))};});}
+  const prev=preview();const newTot=prev.reduce((s,x)=>s+x.newPct,0)+newPct;
+  return <div className="mo"><div className="mb">
+    <div className="mt">Diluição — {newName} ({newPct.toFixed(1)}%)</div>
+    {remaining>0.01&&<div style={{background:'var(--green-l)',borderRadius:8,padding:'10px 12px',marginBottom:14,fontSize:12,color:'var(--green-t)'}}>{remaining>=newPct?`${remaining.toFixed(1)}% disponível — ninguém será diluído.`:`${remaining.toFixed(1)}% disponível. Mais ${needed.toFixed(1)}% serão distribuídos entre os selecionados.`}</div>}
+    {needed>0&&<><div style={{fontSize:12,color:'var(--text2)',marginBottom:8}}>Selecione quem cede participação ({needed.toFixed(1)}% a distribuir):</div>
+    <div style={{display:'flex',gap:6,marginBottom:10}}>
+      <button onClick={()=>setSelected(new Set(dilutable.map(s=>s.id)))} style={{fontSize:11,padding:'4px 10px',borderRadius:6,border:'0.5px solid var(--border-md)',background:'transparent',color:'var(--text2)'}}>Todos</button>
+      <button onClick={()=>setSelected(new Set(dilutable.filter(s=>TC[s.type]==='founder').map(s=>s.id)))} style={{fontSize:11,padding:'4px 10px',borderRadius:6,border:'0.5px solid var(--border-md)',background:'transparent',color:'var(--text2)'}}>Só fundadores</button>
+      <button onClick={()=>setSelected(new Set())} style={{fontSize:11,padding:'4px 10px',borderRadius:6,border:'0.5px solid var(--border-md)',background:'transparent',color:'var(--text2)'}}>Nenhum</button>
+    </div>
+    <div style={{display:'flex',flexDirection:'column',gap:4,marginBottom:14}}>
+      {dilutable.map(s=>{const isSel=selected.has(s.id);const pv=prev.find(x=>x.id===s.id);const col=TCOL[s.type]||'#888';
+        return <div key={s.id} className="cr" onClick={()=>{const ns=new Set(selected);ns.has(s.id)?ns.delete(s.id):ns.add(s.id);setSelected(ns);}}>
+          <input type="checkbox" checked={isSel} onChange={()=>{}} onClick={e=>e.stopPropagation()}/>
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{display:'flex',justifyContent:'space-between',marginBottom:3}}>
+              <span style={{fontSize:13,fontWeight:500}}>{s.name}</span>
+              <span style={{fontSize:12}}>{pp(s.pct).toFixed(1)}%{isSel&&pv?.cede>0?<span style={{color:'var(--red)'}}> → {pv.newPct.toFixed(1)}% <span style={{fontSize:10}}>(-{pv.cede.toFixed(2)}%)</span></span>:null}</span>
+            </div>
+            <div style={{height:5,background:'var(--bg3)',borderRadius:3,overflow:'hidden'}}><div style={{width:`${pp(s.pct)}%`,height:'100%',background:isSel?col:col+'55',borderRadius:3}}/></div>
+          </div>
+        </div>;})}
+    </div></>}
+    <div style={{background:'var(--bg2)',borderRadius:8,padding:'10px 12px',marginBottom:16,fontSize:12}}>
+      <div style={{display:'flex',justifyContent:'space-between'}}><span style={{color:'var(--text2)'}}>Total após adição</span><span style={{fontWeight:500,color:Math.abs(newTot-100)<0.5?'var(--green)':'var(--red)'}}>{newTot.toFixed(1)}%</span></div>
+    </div>
+    <div style={{display:'flex',gap:8,justifyContent:'flex-end'}}>
+      <button className="bs" onClick={onCancel}>Cancelar</button>
+      <button className="bp" onClick={()=>onConfirm(prev.map(s=>({id:s.id,pct:parseFloat(s.newPct.toFixed(3))})))}>Confirmar e adicionar</button>
+    </div>
+  </div></div>;}
+
+function AddModal({onNext,onCancel,isInvestor:forceInv}){
+  const today=new Date().toISOString().slice(0,10);
+  const[f,sf2]=useState({name:'',type:forceInv?'investor':'founder',pct:'',vesting:true,vestYears:4,cliffYears:1,startDate:today,vestGranularity:'monthly',fundName:'',instrument:'Equity',investedAmount:'',preMoneyValuation:'',investmentDate:today,round:'',leadInvestor:false,rights:[],notes:''});
+  const s=(k,v)=>sf2(p=>({...p,[k]:v}));
+  const isInv=f.type==='investor';
+  const post=f.preMoneyValuation&&f.investedAmount?Number(f.preMoneyValuation)+Number(f.investedAmount):null;
+  const calcP=post?((Number(f.investedAmount)/post)*100).toFixed(2):'';
+  const toggleR=r=>{const c=f.rights||[];s('rights',c.includes(r)?c.filter(x=>x!==r):[...c,r]);};
+  return <div className="mo"><div className="mb">
+    <div className="mt">{isInv?'Cadastrar investidor':'Adicionar sócio'}</div>
+    <div className="mg">
+      <div className="fl"><FLabel>Nome completo</FLabel><input className="fi" value={f.name} onChange={e=>s('name',e.target.value)} placeholder="Nome..."/></div>
+      <div><FLabel>Tipo</FLabel><select className="fi" value={f.type} onChange={e=>s('type',e.target.value)}>{Object.entries(TL).map(([v,l])=><option key={v} value={v}>{l}</option>)}</select></div>
+      <div><FLabel>Participação (%)</FLabel><input className="fi" type="number" min={0} max={100} step={0.01} value={isInv&&calcP&&!f.pct?calcP:f.pct} onChange={e=>s('pct',e.target.value)} placeholder={isInv&&calcP?calcP:'Ex: 10'}/></div>
+      {isInv&&<>
+        <div className="sd">Dados da rodada</div>
+        <div><FLabel>Nome do fundo</FLabel><input className="fi" value={f.fundName} onChange={e=>s('fundName',e.target.value)} placeholder="Monashees, Kaszek..."/></div>
+        <div><FLabel>Rodada</FLabel><select className="fi" value={f.round} onChange={e=>s('round',e.target.value)}><option value="">—</option>{['Pre-Seed','Seed','Series A','Series B','Series C','Series D+','Bridge','Strategic'].map(r=><option key={r} value={r}>{r}</option>)}</select></div>
+        <div><FLabel>Instrumento</FLabel><select className="fi" value={f.instrument} onChange={e=>s('instrument',e.target.value)}>{INSTR.map(i=><option key={i} value={i}>{i}</option>)}</select></div>
+        <div><FLabel>Data</FLabel><input className="fi" type="date" value={f.investmentDate} onChange={e=>s('investmentDate',e.target.value)}/></div>
+        <div><FLabel>Valor investido (R$)</FLabel><input className="fi" type="number" min={0} value={f.investedAmount} onChange={e=>s('investedAmount',e.target.value)} placeholder="1000000"/></div>
+        <div><FLabel>Valuation pre-money (R$)</FLabel><input className="fi" type="number" min={0} value={f.preMoneyValuation} onChange={e=>s('preMoneyValuation',e.target.value)} placeholder="5000000"/></div>
+        {post&&<div className="fl"><FLabel>Post-money (calculado)</FLabel><input className="fi" readOnly value={`R$ ${Number(post).toLocaleString('pt-BR')}`} style={{color:'var(--text3)',background:'var(--bg3)'}}/></div>}
+        <div className="sd">Direitos especiais</div>
+        <div className="fl" style={{display:'flex',flexWrap:'wrap',gap:6}}>{RIGHTS.map(r=><button key={r} onClick={()=>toggleR(r)} style={{fontSize:11,padding:'4px 10px',borderRadius:100,border:`0.5px solid ${f.rights?.includes(r)?'var(--blue)':'var(--border-md)'}`,background:f.rights?.includes(r)?'var(--blue-l)':'transparent',color:f.rights?.includes(r)?'var(--blue-t)':'var(--text2)',cursor:'pointer'}}>{r}</button>)}</div>
+        <div className="fl"><label className="cr" style={{padding:'6px 0'}}><input type="checkbox" checked={f.leadInvestor} onChange={e=>s('leadInvestor',e.target.checked)}/><span style={{fontSize:13}}>Lead investor desta rodada</span></label></div>
+        <div className="fl"><FLabel>Observações</FLabel><textarea className="fi" rows={2} value={f.notes} onChange={e=>s('notes',e.target.value)} placeholder="Condições especiais..." style={{resize:'vertical'}}/></div>
+      </>}
+      {!isInv&&f.type!=='pool'&&<>
+        <div className="sd">Vesting</div>
+        <div className="fl"><label className="cr" style={{padding:'6px 0'}}><input type="checkbox" checked={f.vesting} onChange={e=>s('vesting',e.target.checked)}/><span style={{fontSize:13}}>Aplicar vesting a este sócio</span></label></div>
+        {f.vesting&&<>
+          <div><FLabel>Período total</FLabel><select className="fi" value={f.vestYears} onChange={e=>s('vestYears',Number(e.target.value))}>{[1,2,3,4,5,6,7,8,10].map(y=><option key={y} value={y}>{y} anos</option>)}</select></div>
+          <div><FLabel>Cliff</FLabel><select className="fi" value={f.cliffYears} onChange={e=>s('cliffYears',Number(e.target.value))}><option value={0}>Sem cliff</option><option value={0.25}>3 meses</option><option value={0.5}>6 meses</option><option value={1}>12 meses (1 ano)</option><option value={1.5}>18 meses</option><option value={2}>24 meses</option></select></div>
+          <div><FLabel>Granularidade</FLabel><select className="fi" value={f.vestGranularity} onChange={e=>s('vestGranularity',e.target.value)}><option value="monthly">Mensal</option><option value="annual">Anual</option></select></div>
+          <div><FLabel>Data de início</FLabel><input className="fi" type="date" value={f.startDate} onChange={e=>s('startDate',e.target.value)}/></div>
+          {pp(f.pct)>0&&<div className="fl"><div style={{background:'var(--bg2)',borderRadius:8,padding:'10px 12px',fontSize:12,color:'var(--text2)'}}><b>{pp(f.pct).toFixed(1)}%</b> em <b>{f.vestYears} anos</b> ({f.vestGranularity==='monthly'?'mensalmente':'anualmente'}){f.cliffYears>0?`, cliff de ${f.cliffYears>=1?f.cliffYears+' ano(s)':f.cliffYears*12+' meses'}`:', sem cliff'}. Adquire <b>{f.vestGranularity==='monthly'?(pp(f.pct)/(f.vestYears*12)).toFixed(3):(pp(f.pct)/f.vestYears).toFixed(2)}%</b>/{f.vestGranularity==='monthly'?'mês':'ano'} após o cliff.</div></div>}
+        </>}
+      </>}
+    </div>
+    <div style={{display:'flex',gap:8,justifyContent:'flex-end',marginTop:20}}>
+      <button className="bs" onClick={onCancel}>Cancelar</button>
+      <button className="bp" onClick={()=>{if(!f.name)return;const pct=isInv&&calcP&&!f.pct?parseFloat(calcP):parseFloat(f.pct);if(!pct)return;onNext({...f,pct,id:Date.now()});}}>Próximo →</button>
+    </div>
+  </div></div>;}
+
+function EditModal({sh,onSave,onDelete,onCancel}){
+  const[f,sf2]=useState({...sh});const s=(k,v)=>sf2(p=>({...p,[k]:v}));
+  const isInv=f.type==='investor';const toggleR=r=>{const c=f.rights||[];s('rights',c.includes(r)?c.filter(x=>x!==r):[...c,r]);};
+  const post=f.preMoneyValuation&&f.investedAmount?Number(f.preMoneyValuation)+Number(f.investedAmount):null;
+  return <div className="mo"><div className="mb">
+    <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'1.25rem'}}>
+      <div className="mt" style={{marginBottom:0}}>Editar — {sh.name}</div>
+      <button className="bd" style={{fontSize:12,padding:'6px 12px'}} onClick={()=>onDelete(sh.id)}>Remover</button>
+    </div>
+    <div className="mg">
+      <div className="fl"><FLabel>Nome</FLabel><input className="fi" value={f.name} onChange={e=>s('name',e.target.value)}/></div>
+      <div><FLabel>Tipo</FLabel><select className="fi" value={f.type} onChange={e=>s('type',e.target.value)}>{Object.entries(TL).map(([v,l])=><option key={v} value={v}>{l}</option>)}</select></div>
+      <div><FLabel>Participação (%)</FLabel><input className="fi" type="number" min={0} max={100} step={0.01} value={f.pct} onChange={e=>s('pct',parseFloat(e.target.value)||0)}/></div>
+      {isInv&&<>
+        <div className="sd">Dados do investimento</div>
+        <div><FLabel>Fundo</FLabel><input className="fi" value={f.fundName||''} onChange={e=>s('fundName',e.target.value)}/></div>
+        <div><FLabel>Rodada</FLabel><select className="fi" value={f.round||''} onChange={e=>s('round',e.target.value)}><option value="">—</option>{['Pre-Seed','Seed','Series A','Series B','Series C','Series D+','Bridge','Strategic'].map(r=><option key={r} value={r}>{r}</option>)}</select></div>
+        <div><FLabel>Instrumento</FLabel><select className="fi" value={f.instrument||'Equity'} onChange={e=>s('instrument',e.target.value)}>{INSTR.map(i=><option key={i} value={i}>{i}</option>)}</select></div>
+        <div><FLabel>Data</FLabel><input className="fi" type="date" value={f.investmentDate||''} onChange={e=>s('investmentDate',e.target.value)}/></div>
+        <div><FLabel>Valor investido (R$)</FLabel><input className="fi" type="number" min={0} value={f.investedAmount||''} onChange={e=>s('investedAmount',e.target.value)}/></div>
+        <div><FLabel>Valuation pre-money (R$)</FLabel><input className="fi" type="number" min={0} value={f.preMoneyValuation||''} onChange={e=>s('preMoneyValuation',e.target.value)}/></div>
+        {post&&<div className="fl"><FLabel>Post-money</FLabel><input className="fi" readOnly value={`R$ ${Number(post).toLocaleString('pt-BR')}`} style={{color:'var(--text3)',background:'var(--bg3)'}}/></div>}
+        <div className="sd">Direitos</div>
+        <div className="fl" style={{display:'flex',flexWrap:'wrap',gap:6}}>{RIGHTS.map(r=><button key={r} onClick={()=>toggleR(r)} style={{fontSize:11,padding:'4px 10px',borderRadius:100,border:`0.5px solid ${(f.rights||[]).includes(r)?'var(--blue)':'var(--border-md)'}`,background:(f.rights||[]).includes(r)?'var(--blue-l)':'transparent',color:(f.rights||[]).includes(r)?'var(--blue-t)':'var(--text2)',cursor:'pointer'}}>{r}</button>)}</div>
+        <div className="fl"><label className="cr" style={{padding:'6px 0'}}><input type="checkbox" checked={!!f.leadInvestor} onChange={e=>s('leadInvestor',e.target.checked)}/><span style={{fontSize:13}}>Lead investor</span></label></div>
+        <div className="fl"><FLabel>Obs</FLabel><textarea className="fi" rows={2} value={f.notes||''} onChange={e=>s('notes',e.target.value)} style={{resize:'vertical'}}/></div>
+      </>}
+      {!isInv&&f.type!=='pool'&&<>
+        <div className="sd">Vesting</div>
+        <div className="fl"><label className="cr" style={{padding:'6px 0'}}><input type="checkbox" checked={!!f.vesting} onChange={e=>s('vesting',e.target.checked)}/><span style={{fontSize:13}}>Possui vesting</span></label></div>
+        {f.vesting&&<>
+          <div><FLabel>Período</FLabel><select className="fi" value={f.vestYears||4} onChange={e=>s('vestYears',Number(e.target.value))}>{[1,2,3,4,5,6,7,8,10].map(y=><option key={y} value={y}>{y} anos</option>)}</select></div>
+          <div><FLabel>Cliff</FLabel><select className="fi" value={f.cliffYears!=null?f.cliffYears:1} onChange={e=>s('cliffYears',Number(e.target.value))}><option value={0}>Sem cliff</option><option value={0.25}>3 meses</option><option value={0.5}>6 meses</option><option value={1}>12 meses</option><option value={1.5}>18 meses</option><option value={2}>24 meses</option></select></div>
+          <div><FLabel>Granularidade</FLabel><select className="fi" value={f.vestGranularity||'monthly'} onChange={e=>s('vestGranularity',e.target.value)}><option value="monthly">Mensal</option><option value="annual">Anual</option></select></div>
+          <div><FLabel>Data início</FLabel><input className="fi" type="date" value={f.startDate||''} onChange={e=>s('startDate',e.target.value)}/></div>
+        </>}
+      </>}
+    </div>
+    <div style={{display:'flex',gap:8,justifyContent:'flex-end',marginTop:20}}>
+      <button className="bs" onClick={onCancel}>Cancelar</button>
+      <button className="bp" onClick={()=>onSave(f)}>Salvar</button>
+    </div>
+  </div></div>;}
 
 function AlertsPanel({al,sc}){
   const c=sc>=75?'var(--green)':sc>=50?'var(--amber)':'var(--red)';
@@ -95,106 +215,127 @@ function AlertsPanel({al,sc}){
       <div style={{fontSize:36,fontWeight:600,color:c,lineHeight:1}}>{sc}</div>
       <div><div style={{fontSize:13,fontWeight:500,color:c}}>{sc>=75?'Saudável':sc>=50?'Requer atenção':'Risco alto'}</div><div style={{fontSize:11,color:'var(--text3)',marginTop:2}}>pontuação de saúde</div></div>
     </div>
-    <div style={{display:'flex',flexDirection:'column',gap:8}}>
-      {al.map((a,i)=>{const s=ls[a.l]||ls.info;return <div key={i} style={{background:s.bg,borderRadius:8,padding:'10px 12px',display:'flex',gap:10,alignItems:'flex-start'}}><div style={{width:7,height:7,borderRadius:'50%',background:s.dot,flexShrink:0,marginTop:4}}/><div><div style={{fontSize:12,fontWeight:500,color:s.text}}>{a.ti}</div><div style={{fontSize:12,color:s.text,marginTop:2,opacity:.85,lineHeight:1.5}}>{a.de}</div></div></div>;})}
-    </div>
+    <div style={{display:'flex',flexDirection:'column',gap:8}}>{al.map((a,i)=>{const s=ls[a.l]||ls.info;return <div key={i} style={{background:s.bg,borderRadius:8,padding:'10px 12px',display:'flex',gap:10,alignItems:'flex-start'}}><div style={{width:7,height:7,borderRadius:'50%',background:s.dot,flexShrink:0,marginTop:4}}/><div><div style={{fontSize:12,fontWeight:500,color:s.text}}>{a.ti}</div><div style={{fontSize:12,color:s.text,marginTop:2,opacity:.85,lineHeight:1.5}}>{a.de}</div></div></div>;})}</div>
   </div>;}
 
-function CapTP({sh,onU,onD}){
-  const[add,setAdd]=useState(false);
-  const[form,setForm]=useState({name:'',type:'founder',pct:'',vesting:true,vestYears:4,cliffYears:1,startDate:new Date().toISOString().slice(0,10)});
-  const tot=sh.reduce((s,x)=>s+(parseFloat(x.pct)||0),0);
-  const tc=Math.abs(tot-100)<0.5?'var(--green)':'var(--red)';
-  const sf=(k,v)=>setForm(f=>({...f,[k]:v}));
-  const is={fontSize:13,padding:'5px 8px',border:'0.5px solid var(--border-md)',borderRadius:6,background:'var(--bg)',color:'var(--text)'};
+function CapTablePanel({sh,onAdd,onEdit}){
+  const[modal,setModal]=useState(null);
+  const tot=sh.reduce((s,x)=>s+pp(x.pct),0);const tc=Math.abs(tot-100)<0.5?'var(--green)':'var(--red)';
   return <div>
+    {modal==='add'&&<AddModal onNext={ni=>setModal({step:'dil',ni})} onCancel={()=>setModal(null)}/>}
+    {modal==='inv'&&<AddModal isInvestor onNext={ni=>setModal({step:'dil',ni})} onCancel={()=>setModal(null)}/>}
+    {modal?.step==='dil'&&<DilutionModal newPct={pp(modal.ni.pct)} newName={modal.ni.name} shareholders={sh} onConfirm={upd=>{onAdd(modal.ni,upd);setModal(null);}} onCancel={()=>setModal(null)}/>}
+    {modal?.step==='edit'&&<EditModal sh={modal.item} onSave={s=>{onEdit('update',s);setModal(null);}} onDelete={id=>{onEdit('delete',id);setModal(null);}} onCancel={()=>setModal(null)}/>}
     <div style={{overflowX:'auto'}}>
       <table style={{width:'100%',borderCollapse:'collapse',fontSize:13}}>
-        <thead><tr style={{borderBottom:'0.5px solid var(--border)'}}>{['Nome','Tipo','%','Vesting','Bar',''].map(h=><th key={h} style={{padding:'6px 10px',textAlign:'left',fontSize:11,fontWeight:500,color:'var(--text3)'}}>{h}</th>)}</tr></thead>
-        <tbody>
-          {sh.map(s=>{const p=parseFloat(s.pct)||0;const bw=tot>0?Math.min(100,(p/tot)*100):0;const col=TCOL[s.type]||'#888';
-            return <tr key={s.id} style={{borderBottom:'0.5px solid var(--border)'}}>
-              <td style={{padding:'8px 10px',fontWeight:500}}>{s.name}</td>
-              <td style={{padding:'8px 10px'}}><span style={{fontSize:11,padding:'2px 8px',borderRadius:100,background:'var(--bg3)',color:'var(--text2)'}}>{TL[s.type]||s.type}</span></td>
-              <td style={{padding:'8px 10px'}}><input type="number" min={0} max={100} step={0.1} value={p.toFixed(1)} onChange={e=>onU('pct',{id:s.id,pct:parseFloat(e.target.value)||0})} style={{width:64,fontSize:13,padding:'4px 7px',border:'0.5px solid var(--border)',borderRadius:6,background:'var(--bg2)',color:'var(--text)',textAlign:'right'}}/></td>
-              <td style={{padding:'8px 10px'}}>{TC[s.type]!=='investor'?<span style={{fontSize:11,padding:'2px 8px',borderRadius:100,background:s.vesting?'var(--green-l)':'var(--red-l)',color:s.vesting?'var(--green-t)':'var(--red-t)'}}>{s.vesting?`${s.vestYears||4}a/cliff ${s.cliffYears||1}a`:'Sem vesting'}</span>:<span style={{fontSize:11,color:'var(--text3)'}}>—</span>}</td>
-              <td style={{padding:'8px 10px'}}><div style={{width:72,height:6,background:'var(--bg3)',borderRadius:3,overflow:'hidden'}}><div style={{width:`${bw}%`,height:'100%',background:col,borderRadius:3}}/></div></td>
-              <td style={{padding:'8px 10px'}}><button onClick={()=>onD(s.id)} style={{width:24,height:24,borderRadius:'50%',border:'0.5px solid var(--border)',background:'transparent',color:'var(--text3)',fontSize:16,display:'flex',alignItems:'center',justifyContent:'center',lineHeight:1}}>×</button></td>
-            </tr>;})}
-          {add&&<tr style={{background:'var(--blue-l)'}}>
-            <td style={{padding:'8px 10px'}}><input value={form.name} onChange={e=>sf('name',e.target.value)} placeholder="Nome" autoFocus style={{...is,width:'100%'}}/></td>
-            <td style={{padding:'8px 6px'}}><select value={form.type} onChange={e=>sf('type',e.target.value)} style={{...is,width:'100%'}}>{Object.entries(TL).map(([v,l])=><option key={v} value={v}>{l}</option>)}</select></td>
-            <td style={{padding:'8px 6px'}}><input type="number" value={form.pct} onChange={e=>sf('pct',e.target.value)} placeholder="%" min={0} max={100} step={0.1} style={{...is,width:64,textAlign:'right'}}/></td>
-            <td style={{padding:'8px 6px'}}><label style={{display:'flex',alignItems:'center',gap:6,fontSize:12,cursor:'pointer'}}><input type="checkbox" checked={form.vesting} onChange={e=>sf('vesting',e.target.checked)}/>{form.vesting?'Sim':'Não'}</label></td>
-            <td colSpan={2} style={{padding:'8px 10px'}}><div style={{display:'flex',gap:6}}>
-              <button onClick={()=>{if(form.name&&form.pct){onU('add',{...form,id:Date.now(),pct:parseFloat(form.pct)});setAdd(false);setForm({name:'',type:'founder',pct:'',vesting:true,vestYears:4,cliffYears:1,startDate:new Date().toISOString().slice(0,10)});}}} style={{fontSize:12,padding:'5px 14px',borderRadius:6,border:'none',background:'var(--blue)',color:'#fff'}}>Adicionar</button>
-              <button onClick={()=>setAdd(false)} style={{fontSize:12,padding:'5px 14px',borderRadius:6,border:'0.5px solid var(--border-md)',background:'transparent',color:'var(--text2)'}}>Cancelar</button>
-            </div></td>
-          </tr>}
-        </tbody>
+        <thead><tr style={{borderBottom:'0.5px solid var(--border)'}}>{['Nome','Tipo','%','Vesting / Investimento','Dist.',''].map(h=><th key={h} style={{padding:'6px 10px',textAlign:'left',fontSize:11,fontWeight:500,color:'var(--text3)'}}>{h}</th>)}</tr></thead>
+        <tbody>{sh.map(s=>{
+          const p=pp(s.pct);const bw=tot>0?Math.min(100,(p/tot)*100):0;const col=TCOL[s.type]||'#888';const isInv=s.type==='investor';
+          return <tr key={s.id} style={{borderBottom:'0.5px solid var(--border)'}}>
+            <td style={{padding:'8px 10px'}}><div style={{display:'flex',alignItems:'center',gap:6}}><div style={{width:8,height:8,borderRadius:'50%',background:col,flexShrink:0}}/><span style={{fontWeight:500}}>{s.name}</span>{isInv&&s.leadInvestor&&<span style={{fontSize:10,padding:'1px 6px',borderRadius:100,background:'var(--amber-l)',color:'var(--amber-t)'}}>Lead</span>}</div>{isInv&&s.fundName&&s.fundName!==s.name&&<div style={{fontSize:11,color:'var(--text3)',marginLeft:14}}>{s.fundName}</div>}</td>
+            <td style={{padding:'8px 10px'}}><span style={{fontSize:11,padding:'2px 8px',borderRadius:100,background:'var(--bg3)',color:'var(--text2)'}}>{TL[s.type]||s.type}</span>{isInv&&s.round&&<span style={{fontSize:10,padding:'1px 6px',borderRadius:100,background:'var(--purple-l)',color:'var(--purple-t)',marginLeft:4}}>{s.round}</span>}</td>
+            <td style={{padding:'8px 10px',fontWeight:500}}>{p.toFixed(1)}%</td>
+            <td style={{padding:'8px 10px'}}>{isInv?<div style={{fontSize:11,color:'var(--text2)'}}>{s.investedAmount&&<span>R$ {Number(s.investedAmount).toLocaleString('pt-BR')}</span>}{s.instrument&&<span style={{marginLeft:6,padding:'1px 6px',borderRadius:100,background:'var(--bg3)',fontSize:10}}>{s.instrument}</span>}{s.preMoneyValuation&&<div style={{color:'var(--text3)',marginTop:1}}>Pre: R$ {Number(s.preMoneyValuation).toLocaleString('pt-BR')}</div>}{(s.rights||[]).length>0&&<div style={{marginTop:3,display:'flex',flexWrap:'wrap',gap:3}}>{(s.rights||[]).map(r=><span key={r} style={{fontSize:9,padding:'1px 5px',borderRadius:100,background:'var(--blue-l)',color:'var(--blue-t)'}}>{r}</span>)}</div>}</div>:TC[s.type]!=='investor'&&s.type!=='pool'?<span style={{fontSize:11,padding:'2px 8px',borderRadius:100,background:s.vesting?'var(--green-l)':'var(--red-l)',color:s.vesting?'var(--green-t)':'var(--red-t)'}}>{s.vesting?`${s.vestYears||4}a / cliff ${s.cliffYears===0?'sem cliff':s.cliffYears>=1?s.cliffYears+'a':s.cliffYears*12+'m'} · ${s.vestGranularity==='monthly'?'mensal':'anual'}`:'Sem vesting'}</span>:<span style={{fontSize:11,color:'var(--text3)'}}>—</span>}</td>
+            <td style={{padding:'8px 10px'}}><div style={{width:72,height:6,background:'var(--bg3)',borderRadius:3,overflow:'hidden'}}><div style={{width:`${bw}%`,height:'100%',background:col,borderRadius:3}}/></div></td>
+            <td style={{padding:'8px 10px'}}><button onClick={()=>setModal({step:'edit',item:s})} style={{fontSize:11,padding:'3px 10px',borderRadius:6,border:'0.5px solid var(--border-md)',background:'transparent',color:'var(--text2)'}}>Editar</button></td>
+          </tr>;})}</tbody>
         <tfoot><tr style={{borderTop:'0.5px solid var(--border-md)'}}><td colSpan={2} style={{padding:'8px 10px',fontWeight:500}}>Total</td><td style={{padding:'8px 10px',fontWeight:600,fontSize:14,color:tc}}>{tot.toFixed(1)}%</td><td colSpan={3} style={{padding:'8px 10px',fontSize:11,color:'var(--text3)'}}>{Math.abs(tot-100)<0.5?'✓ Fechado':'Diferença: '+(tot-100).toFixed(1)+'%'}</td></tr></tfoot>
       </table>
     </div>
-    {!add&&<button onClick={()=>setAdd(true)} style={{marginTop:10,width:'100%',padding:'8px',fontSize:12,borderRadius:8,border:'0.5px dashed var(--border-md)',background:'transparent',color:'var(--text3)'}}>+ Adicionar sócio</button>}
+    <div style={{display:'flex',gap:8,marginTop:12}}>
+      <button onClick={()=>setModal('add')} style={{flex:1,padding:'8px',fontSize:12,borderRadius:8,border:'0.5px dashed var(--border-md)',background:'transparent',color:'var(--text3)'}}>+ Sócio / colaborador</button>
+      <button onClick={()=>setModal('inv')} style={{flex:1,padding:'8px',fontSize:12,borderRadius:8,border:'0.5px dashed var(--amber)',background:'var(--amber-l)',color:'var(--amber-t)',fontWeight:500}}>+ Registrar investidor</button>
+    </div>
   </div>;}
 
-function VestP({sh}){
+function VestingPanel({sh}){
   const el=sh.filter(s=>s.vesting&&TC[s.type]!=='investor'&&s.type!=='pool');
-  const[sel,setSel]=useState(null);
+  const[sel,setSel]=useState(null);const[gran,setGran]=useState(null);
   if(el.length===0)return <div style={{textAlign:'center',padding:'32px 16px',color:'var(--text3)',fontSize:13}}>Nenhum sócio com vesting configurado.</div>;
-  const p=sh.find(s=>s.id===sel)||el[0];
-  const sc2=genVest(parseFloat(p.pct),p.vestYears||4,p.cliffYears||1,p.startDate||'2024-01-01');
-  const mv=parseFloat(p.pct);const col=TCOL[p.type]||'#888';const cid=(sel||el[0].id);
+  const p=sh.find(s=>s.id===sel)||el[0];const g=gran||(p.vestGranularity||'monthly');
+  const sc=genVesting(pp(p.pct),p.vestYears||4,p.cliffYears!=null?p.cliffYears:1,p.startDate||'2024-01-01',g);
+  const mv=pp(p.pct);const col=TCOL[p.type]||'#888';const cid=sel||el[0].id;
+  const barSc=sc.filter((_,i)=>sc.length<=24||i%Math.ceil(sc.length/24)===0||sc[i].isCliff||sc[i].isFull);
   return <div>
-    {el.length>1&&<div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:14}}>{el.map(s=><button key={s.id} onClick={()=>setSel(s.id)} style={{fontSize:12,padding:'4px 12px',borderRadius:100,border:cid===s.id?'none':'0.5px solid var(--border)',background:cid===s.id?col:'transparent',color:cid===s.id?'#fff':'var(--text2)',fontWeight:cid===s.id?500:400}}>{s.name}</button>)}</div>}
-    <div style={{display:'flex',alignItems:'baseline',gap:8,marginBottom:4}}><span style={{fontSize:20,fontWeight:500}}>{p.name}</span><span style={{fontSize:12,color:'var(--text3)'}}>{TL[p.type]}</span></div>
-    <div style={{fontSize:12,color:'var(--text3)',marginBottom:16}}>{parseFloat(p.pct).toFixed(1)}% · {p.vestYears||4} anos · cliff {p.cliffYears||1} ano</div>
-    <div style={{display:'flex',gap:1,alignItems:'flex-end',height:72,marginBottom:16}}>
-      {sc2.map((pt,i)=>{const bh=mv>0?(pt.vp/mv)*64:0;return <div key={i} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center'}} title={`${pt.date}: ${pt.vp.toFixed(1)}%`}><div style={{width:'70%',height:bh,background:pt.isCliff?col:`${col}88`,borderRadius:'3px 3px 0 0',minHeight:bh>0?2:0}}/><div style={{width:'100%',height:1,background:'var(--border)'}}/><div style={{fontSize:8,color:pt.isCliff?col:'var(--text3)',fontWeight:pt.isCliff?600:400,marginTop:2,textAlign:'center'}}>{pt.isCliff?'Cliff':''}</div></div>;})}
+    {el.length>1&&<div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:14}}>{el.map(s=><button key={s.id} onClick={()=>{setSel(s.id);setGran(null);}} style={{fontSize:12,padding:'4px 12px',borderRadius:100,border:cid===s.id?'none':'0.5px solid var(--border)',background:cid===s.id?col:'transparent',color:cid===s.id?'#fff':'var(--text2)',fontWeight:cid===s.id?500:400}}>{s.name}</button>)}</div>}
+    <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:4}}>
+      <div style={{display:'flex',alignItems:'baseline',gap:8}}><span style={{fontSize:20,fontWeight:500}}>{p.name}</span><span style={{fontSize:12,color:'var(--text3)'}}>{TL[p.type]}</span></div>
+      <div style={{display:'flex',gap:4}}>{['monthly','annual'].map(opt=><button key={opt} onClick={()=>setGran(opt)} style={{fontSize:11,padding:'3px 10px',borderRadius:100,border:g===opt?'none':'0.5px solid var(--border)',background:g===opt?'var(--text)':'transparent',color:g===opt?'var(--bg)':'var(--text2)'}}>{opt==='monthly'?'Mensal':'Anual'}</button>)}</div>
     </div>
+    <div style={{fontSize:12,color:'var(--text3)',marginBottom:16}}>{pp(p.pct).toFixed(1)}% · {p.vestYears||4} anos · cliff {p.cliffYears===0?'sem cliff':p.cliffYears>=1?p.cliffYears+' ano(s)':p.cliffYears*12+' meses'}</div>
+    <div style={{display:'flex',gap:1,alignItems:'flex-end',height:80,marginBottom:16}}>{barSc.map((pt,i)=>{const bh=mv>0?(pt.vp/mv)*72:0;return <div key={i} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center'}} title={`${pt.date}: ${pt.vp.toFixed(2)}%`}><div style={{width:'80%',height:bh,background:pt.isCliff?col:`${col}77`,borderRadius:'3px 3px 0 0',minHeight:bh>0?2:0}}/><div style={{width:'100%',height:1,background:'var(--border)'}}/><div style={{fontSize:8,color:pt.isCliff?col:'var(--text3)',fontWeight:pt.isCliff?600:400,marginTop:2,textAlign:'center'}}>{pt.isCliff?'Cliff':''}</div></div>;})}</div>
     <div style={{overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',fontSize:12}}>
       <thead><tr style={{borderBottom:'0.5px solid var(--border)'}}>{['Período','Data','Adquirido','Acumulado','%'].map(h=><th key={h} style={{padding:'5px 8px',textAlign:'left',fontSize:10,fontWeight:500,color:'var(--text3)'}}>{h}</th>)}</tr></thead>
-      <tbody>{sc2.map((pt,i)=><tr key={i} style={{borderBottom:'0.5px solid var(--border)',background:pt.isCliff?'var(--blue-l)':pt.isFull?'var(--green-l)':'transparent'}}>
+      <tbody>{sc.map((pt,i)=><tr key={i} style={{borderBottom:'0.5px solid var(--border)',background:pt.isCliff?'var(--blue-l)':pt.isFull?'var(--green-l)':'transparent'}}>
         <td style={{padding:'6px 8px',fontWeight:pt.isCliff||pt.isFull?500:400,color:pt.isCliff?'var(--blue-t)':pt.isFull?'var(--green-t)':'var(--text)'}}>{pt.label||`Mês ${pt.m}`}</td>
         <td style={{padding:'6px 8px',color:'var(--text2)'}}>{pt.date}</td>
-        <td style={{padding:'6px 8px',color:pt.dp>0?col:'var(--text3)'}}>{pt.dp>0?`+${pt.dp.toFixed(2)}%`:'—'}</td>
+        <td style={{padding:'6px 8px',color:pt.dp>0?col:'var(--text3)'}}>{pt.dp>0?`+${pt.dp.toFixed(g==='monthly'?3:2)}%`:'—'}</td>
         <td style={{padding:'6px 8px',fontWeight:500}}>{pt.vp.toFixed(2)}%</td>
         <td style={{padding:'6px 8px'}}><div style={{display:'flex',alignItems:'center',gap:6}}><div style={{flex:1,height:4,background:'var(--bg3)',borderRadius:2,overflow:'hidden'}}><div style={{width:`${mv>0?(pt.vp/mv)*100:0}%`,height:'100%',background:col,borderRadius:2}}/></div><span style={{fontSize:10,color:'var(--text3)',width:30}}>{mv>0?Math.round((pt.vp/mv)*100):0}%</span></div></td>
       </tr>)}</tbody>
     </table></div>
   </div>;}
 
-function SimP({sh,stage}){
+function InvestorsPanel({sh}){
+  const investors=sh.filter(s=>s.type==='investor');
+  if(investors.length===0)return <div style={{textAlign:'center',padding:'32px 16px',color:'var(--text3)',fontSize:13}}>Nenhum investidor cadastrado.<br/><span style={{fontSize:12}}>Use "+ Registrar investidor" na aba Cap Table.</span></div>;
+  const totalInv=investors.reduce((s,x)=>s+(Number(x.investedAmount)||0),0);
+  return <div>
+    <div style={{display:'flex',gap:10,marginBottom:16,flexWrap:'wrap'}}>
+      <MC label="Investidores" value={investors.length} sub="cadastrados"/>
+      <MC label="Total captado" value={totalInv>=1e6?`R$ ${(totalInv/1e6).toFixed(1)}M`:totalInv>=1e3?`R$ ${(totalInv/1e3).toFixed(0)}k`:`R$ ${totalInv.toLocaleString('pt-BR')}`} sub="soma dos aportes"/>
+      <MC label="% dos investidores" value={`${investors.reduce((s,x)=>s+pp(x.pct),0).toFixed(1)}%`} sub="total investidores"/>
+    </div>
+    <div style={{display:'flex',flexDirection:'column',gap:10}}>{investors.map(s=>{
+      const post=s.preMoneyValuation&&s.investedAmount?Number(s.preMoneyValuation)+Number(s.investedAmount):null;
+      return <div key={s.id} style={{background:'var(--bg)',border:'0.5px solid var(--border)',borderRadius:12,padding:'1rem 1.25rem'}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:10}}>
+          <div><div style={{display:'flex',alignItems:'center',gap:8}}><span style={{fontSize:15,fontWeight:500}}>{s.name}</span>{s.leadInvestor&&<span style={{fontSize:10,padding:'2px 8px',borderRadius:100,background:'var(--amber-l)',color:'var(--amber-t)',fontWeight:500}}>Lead</span>}{s.round&&<span style={{fontSize:10,padding:'2px 8px',borderRadius:100,background:'var(--purple-l)',color:'var(--purple-t)'}}>{s.round}</span>}</div>{s.fundName&&s.fundName!==s.name&&<div style={{fontSize:12,color:'var(--text3)',marginTop:2}}>{s.fundName}</div>}</div>
+          <div style={{fontSize:20,fontWeight:500,color:'var(--amber)'}}>{pp(s.pct).toFixed(1)}%</div>
+        </div>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(120px,1fr))',gap:8,marginBottom:(s.rights?.length>0||s.notes)?10:0}}>
+          {s.investedAmount&&<div style={{background:'var(--bg2)',borderRadius:8,padding:'8px 10px'}}><div style={{fontSize:10,color:'var(--text3)'}}>Valor investido</div><div style={{fontSize:13,fontWeight:500}}>R$ {Number(s.investedAmount).toLocaleString('pt-BR')}</div></div>}
+          {s.preMoneyValuation&&<div style={{background:'var(--bg2)',borderRadius:8,padding:'8px 10px'}}><div style={{fontSize:10,color:'var(--text3)'}}>Pre-money</div><div style={{fontSize:13,fontWeight:500}}>R$ {Number(s.preMoneyValuation).toLocaleString('pt-BR')}</div></div>}
+          {post&&<div style={{background:'var(--bg2)',borderRadius:8,padding:'8px 10px'}}><div style={{fontSize:10,color:'var(--text3)'}}>Post-money</div><div style={{fontSize:13,fontWeight:500}}>R$ {Number(post).toLocaleString('pt-BR')}</div></div>}
+          {s.instrument&&<div style={{background:'var(--bg2)',borderRadius:8,padding:'8px 10px'}}><div style={{fontSize:10,color:'var(--text3)'}}>Instrumento</div><div style={{fontSize:13,fontWeight:500}}>{s.instrument}</div></div>}
+          {s.investmentDate&&<div style={{background:'var(--bg2)',borderRadius:8,padding:'8px 10px'}}><div style={{fontSize:10,color:'var(--text3)'}}>Data</div><div style={{fontSize:13,fontWeight:500}}>{new Date(s.investmentDate).toLocaleDateString('pt-BR')}</div></div>}
+        </div>
+        {(s.rights||[]).length>0&&<div style={{display:'flex',flexWrap:'wrap',gap:5,marginBottom:s.notes?8:0}}>{(s.rights||[]).map(r=><span key={r} style={{fontSize:11,padding:'2px 8px',borderRadius:100,background:'var(--blue-l)',color:'var(--blue-t)'}}>{r}</span>)}</div>}
+        {s.notes&&<div style={{fontSize:12,color:'var(--text2)',background:'var(--bg2)',borderRadius:8,padding:'8px 10px',fontStyle:'italic'}}>{s.notes}</div>}
+      </div>;})}
+  </div>;}
+
+function SimPanel({sh,stage}){
   const[ps,setPs]=useState(15);const[vm,setVm]=useState(20);
-  const r=simRound(sh,stage,ps,vm);const b=BM[stage];
+  const t=totals(sh);const b=BM[stage];const raised=(vm*ps)/(100-ps);const post=vm+raised;
   const fmt=n=>n>=1000?`R$ ${(n/1000).toFixed(1)}B`:`R$ ${n.toFixed(1)}M`;
   return <div>
     <div style={{display:'flex',flexDirection:'column',gap:14,marginBottom:16}}>
-      <div><div style={{display:'flex',justifyContent:'space-between',marginBottom:5}}><label style={{fontSize:12,color:'var(--text2)'}}>% a vender</label><span style={{fontSize:13,fontWeight:500}}>{ps}%</span></div><input type="range" min={1} max={40} step={1} value={ps} onChange={e=>setPs(Number(e.target.value))}/><div style={{display:'flex',justifyContent:'space-between',fontSize:10,color:'var(--text3)',marginTop:2}}><span>1%</span><span>ref: {b.iMin}–{b.iMax}%</span><span>40%</span></div></div>
+      <div><div style={{display:'flex',justifyContent:'space-between',marginBottom:5}}><label style={{fontSize:12,color:'var(--text2)'}}>% a vender nesta rodada</label><span style={{fontSize:13,fontWeight:500}}>{ps}%</span></div><input type="range" min={1} max={40} step={1} value={ps} onChange={e=>setPs(Number(e.target.value))}/><div style={{display:'flex',justifyContent:'space-between',fontSize:10,color:'var(--text3)',marginTop:2}}><span>1%</span><span>ref: {b.iMin}–{b.iMax}%</span><span>40%</span></div></div>
       <div><div style={{display:'flex',justifyContent:'space-between',marginBottom:5}}><label style={{fontSize:12,color:'var(--text2)'}}>Valuation pre-money</label><span style={{fontSize:13,fontWeight:500}}>{fmt(vm)}</span></div><input type="range" min={1} max={500} step={1} value={vm} onChange={e=>setVm(Number(e.target.value))}/><div style={{display:'flex',justifyContent:'space-between',fontSize:10,color:'var(--text3)',marginTop:2}}><span>R$ 1M</span><span>R$ 500M</span></div></div>
     </div>
     <div style={{background:'var(--bg2)',borderRadius:10,overflow:'hidden',border:'0.5px solid var(--border)'}}>
-      {[['Pre-money',fmt(r.pre),false],['Capital captado',fmt(r.raised),false],['Post-money',fmt(r.post),false],['Fundadores após rodada',`${r.fa.toFixed(1)}%`,!r.ok],['Pool após rodada',`${r.pa.toFixed(1)}%`,false]].map(([lb,vl,warn],i,arr)=><div key={lb} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'9px 14px',borderBottom:i<arr.length-1?'0.5px solid var(--border)':'none',fontWeight:i>=arr.length-2?500:400}}><span style={{fontSize:12,color:'var(--text2)'}}>{lb}</span><span style={{fontSize:13,color:warn?'var(--red)':'var(--text)'}}>{vl}{warn&&<span style={{fontSize:10,marginLeft:4,color:'var(--red)'}}>⚠ abaixo do mínimo</span>}</span></div>)}
+      {[['Pre-money',fmt(vm),false],['Capital captado',fmt(raised),false],['Post-money',fmt(post),false],['Fundadores após rodada',`${(t.founder*(1-ps/100)).toFixed(1)}%`,(t.founder*(1-ps/100))<b.fMin],['Pool após rodada',`${(t.pool*(1-ps/100)).toFixed(1)}%`,false]].map(([lb,vl,warn],i,arr)=><div key={lb} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'9px 14px',borderBottom:i<arr.length-1?'0.5px solid var(--border)':'none',fontWeight:i>=arr.length-2?500:400}}><span style={{fontSize:12,color:'var(--text2)'}}>{lb}</span><span style={{fontSize:13,color:warn?'var(--red)':'var(--text)'}}>{vl}{warn&&<span style={{fontSize:10,marginLeft:4}}>⚠ abaixo do mínimo</span>}</span></div>)}
     </div>
   </div>;}
 
 const DEF={name:'Minha Startup',stage:'pre-seed',shareholders:[
-  {id:1,name:'Ana Lima',type:'founder',pct:44,vesting:true,vestYears:4,cliffYears:1,startDate:'2024-01-01'},
-  {id:2,name:'Bruno Costa',type:'founder',pct:43,vesting:true,vestYears:4,cliffYears:1,startDate:'2024-01-01'},
-  {id:3,name:'Equity Pool',type:'pool',pct:13,vesting:false,vestYears:4,cliffYears:1,startDate:'2024-01-01'}]};
-const STAGES=Object.entries(SL);const TABS=['Cap Table','Vesting','Simulador'];
+  {id:1,name:'Ana Lima',type:'founder',pct:44,vesting:true,vestYears:4,cliffYears:1,startDate:'2024-01-01',vestGranularity:'monthly'},
+  {id:2,name:'Bruno Costa',type:'founder',pct:43,vesting:true,vestYears:4,cliffYears:1,startDate:'2024-01-01',vestGranularity:'monthly'},
+  {id:3,name:'Equity Pool',type:'pool',pct:13,vesting:false,vestYears:4,cliffYears:1,startDate:'2024-01-01',vestGranularity:'monthly'},
+]};
+const STAGES=Object.entries(SL);const TABS=['Cap Table','Vesting','Investidores','Simulador'];
 
 function App(){
-  const[st,setSt]=useLS('cth-v3',DEF);const[tab,setTab]=useState(0);const[en,setEn]=useState(false);
+  const[st,setSt]=useLS('cth-v5',DEF);const[tab,setTab]=useState(0);const[en,setEn]=useState(false);
   const t=useMemo(()=>totals(st.shareholders),[st.shareholders]);
-  const sc=useMemo(()=>score(st.shareholders,st.stage),[st.shareholders,st.stage]);
-  const al=useMemo(()=>alerts(st.shareholders,st.stage),[st.shareholders,st.stage]);
-  const cc=sc>=75?'var(--green)':sc>=50?'var(--amber)':'var(--red)';
-  const upd=(action,payload)=>setSt(s=>{if(action==='pct')return{...s,shareholders:s.shareholders.map(x=>x.id===payload.id?{...x,pct:payload.pct}:x)};if(action==='add')return{...s,shareholders:[...s.shareholders,payload]};return s;});
-  const del=id=>setSt(s=>({...s,shareholders:s.shareholders.filter(x=>x.id!==id)}));
-  const b=BM[st.stage];
+  const sc=useMemo(()=>calcScore(st.shareholders,st.stage),[st.shareholders,st.stage]);
+  const al=useMemo(()=>getAlerts(st.shareholders,st.stage),[st.shareholders,st.stage]);
+  const cc=sc>=75?'var(--green)':sc>=50?'var(--amber)':'var(--red)';const b=BM[st.stage];
+  const handleAdd=useCallback((ni,upd)=>setSt(s=>({...s,shareholders:[...s.shareholders.map(x=>{const u=upd.find(d=>d.id===x.id);return u?{...x,pct:u.pct}:x;}),ni]})),[]);
+  const handleEdit=useCallback((action,payload)=>setSt(s=>({...s,shareholders:action==='update'?s.shareholders.map(x=>x.id===payload.id?payload:x):s.shareholders.filter(x=>x.id!==payload)})),[]);
   return <div style={{minHeight:'100vh',background:'var(--bg2)'}}>
-    <div style={{maxWidth:1100,margin:'0 auto',padding:'0 20px 40px'}}>
+    <div style={{maxWidth:1140,margin:'0 auto',padding:'0 20px 40px'}}>
       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'16px 0',borderBottom:'0.5px solid var(--border)',flexWrap:'wrap',gap:10}}>
         <div style={{display:'flex',alignItems:'center',gap:10}}>
           <span style={{fontSize:15,fontWeight:500}}>Cap Table <span style={{color:'var(--text3)',fontWeight:400}}>Health</span></span>
@@ -204,30 +345,28 @@ function App(){
         <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
           <div style={{display:'flex',gap:4}}>{STAGES.map(([k,l])=><button key={k} onClick={()=>setSt(s=>({...s,stage:k}))} style={{fontSize:11,padding:'5px 11px',borderRadius:100,border:st.stage===k?'none':'0.5px solid var(--border)',background:st.stage===k?'var(--text)':'transparent',color:st.stage===k?'var(--bg)':'var(--text2)',fontWeight:st.stage===k?500:400}}>{l}</button>)}</div>
           <button onClick={()=>exportPDF(st)} style={{fontSize:12,padding:'6px 14px',borderRadius:8,border:'0.5px solid var(--border-md)',background:'transparent',color:'var(--text2)',display:'flex',alignItems:'center',gap:5}}>
-            <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 12h10M8 3v7M5 7l3 3 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-            Exportar PDF
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M3 12h10M8 3v7M5 7l3 3 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>Exportar PDF
           </button>
         </div>
       </div>
       <div style={{display:'flex',gap:10,margin:'16px 0',flexWrap:'wrap'}}>
         <MC label="Fundadores" value={`${t.founder.toFixed(1)}%`} sub={`ref: ${b.fMin}–${b.fMax}%`} color={t.founder>=b.fMin?'var(--green)':t.founder>=b.fMin-15?'var(--amber)':'var(--red)'}/>
         <MC label="Equity pool" value={`${t.pool.toFixed(1)}%`} sub="ref: 10–15%" color={t.pool>=8&&t.pool<=15?'var(--green)':'var(--amber)'}/>
-        <MC label="Investidores" value={`${t.investor.toFixed(1)}%`} sub="total"/>
+        <MC label="Investidores" value={`${t.investor.toFixed(1)}%`} sub={`${st.shareholders.filter(s=>s.type==='investor').length} rodada(s)`}/>
         <MC label="Score de saúde" value={`${sc}/100`} sub={sc>=75?'Saudável':sc>=50?'Atenção':'Crítico'} color={cc}/>
         {al.filter(a=>a.l==='danger').length>0&&<MC label="Alertas críticos" value={al.filter(a=>a.l==='danger').length} sub={`+ ${al.filter(a=>a.l==='warn').length} avisos`} color="var(--red)"/>}
       </div>
-      <div style={{display:'grid',gridTemplateColumns:'minmax(0,1fr) 320px',gap:12,alignItems:'start'}}>
+      <div style={{display:'grid',gridTemplateColumns:'minmax(0,1fr) 310px',gap:12,alignItems:'start'}}>
         <Card>
-          <div style={{display:'flex',marginBottom:16,borderBottom:'0.5px solid var(--border)'}}>
-            {TABS.map((tb,i)=><button key={tb} onClick={()=>setTab(i)} style={{fontSize:13,padding:'8px 16px',border:'none',borderBottom:tab===i?'2px solid var(--blue)':'2px solid transparent',background:'transparent',color:tab===i?'var(--blue)':'var(--text2)',fontWeight:tab===i?500:400,marginBottom:-1}}>{tb}</button>)}
-          </div>
-          {tab===0&&<CapTP sh={st.shareholders} onU={upd} onD={del}/>}
-          {tab===1&&<VestP sh={st.shareholders}/>}
-          {tab===2&&<SimP sh={st.shareholders} stage={st.stage}/>}
+          <div style={{display:'flex',marginBottom:16,borderBottom:'0.5px solid var(--border)'}}>{TABS.map((tb,i)=><button key={tb} onClick={()=>setTab(i)} style={{fontSize:13,padding:'8px 14px',border:'none',borderBottom:tab===i?'2px solid var(--blue)':'2px solid transparent',background:'transparent',color:tab===i?'var(--blue)':'var(--text2)',fontWeight:tab===i?500:400,marginBottom:-1}}>{tb}</button>)}</div>
+          {tab===0&&<CapTablePanel sh={st.shareholders} onAdd={handleAdd} onEdit={handleEdit}/>}
+          {tab===1&&<VestingPanel sh={st.shareholders}/>}
+          {tab===2&&<InvestorsPanel sh={st.shareholders}/>}
+          {tab===3&&<SimPanel sh={st.shareholders} stage={st.stage}/>}
         </Card>
         <Card><ST>Diagnóstico</ST><AlertsPanel al={al} sc={sc}/></Card>
       </div>
-      <div style={{marginTop:24,fontSize:11,color:'var(--text3)',textAlign:'center'}}>KVR Consulting · Cap Table Health · Dados salvos no navegador · Apenas para referência</div>
+      <div style={{marginTop:24,fontSize:11,color:'var(--text3)',textAlign:'center'}}>KVR Consulting · Cap Table Health · Dados salvos localmente no navegador · Apenas para referência</div>
     </div>
   </div>;}
 
